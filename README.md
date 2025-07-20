@@ -1,4 +1,4 @@
-# 🇹🇭 Thai Dictionary Web Application
+# Thai Dictionary Web Application
 
 A comprehensive web application for learning and translating Thai language with Vietnamese support.
 
