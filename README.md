@@ -1,70 +1,91 @@
-# Getting Started with Create React App
+# 🇹🇭 Thai Dictionary Web Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A comprehensive web application for learning and translating Thai language with Vietnamese support.
 
-## Available Scripts
+## 🎯 Mục tiêu web
 
-In the project directory, you can run:
+- Hỗ trợ dịch từ/đoạn văn ngôn ngữ Thái (Việt Nam) sang tiếng Việt.
+- Bảo tồn và phát triển ngôn ngữ dân tộc Thái.
+- Có khả năng mở rộng thành web học ngôn ngữ Thái.
 
-### `npm start`
+## ✨ Chức năng
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 1. Chức năng người dùng
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Tra cứu từ / câu**
+  - Tìm kiếm từ/câu Thái để lấy nghĩa tiếng Việt.
+  - Gợi ý từ gần đúng nếu người dùng gõ sai.
+  - Hỗ trợ cả chữ Latin và chữ Thái nếu có.
 
-### `npm test`
+- **Dịch đoạn văn**
+  - Nhập đoạn văn ngắn tiếng Thái → Dịch sang tiếng Việt.
+  - Hiển thị chú thích ngữ pháp hoặc từ khó nếu có.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Lịch sử tra cứu**
+  - Người dùng không đăng nhập vẫn có thể xem lại lịch sử tra cứu gần đây (lưu localStorage).
+  - Có nút xoá lịch sử.
 
-### `npm run build`
+- **Đăng nhập, đăng ký**
+  - Người dùng quản lý tài khoản của mình.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Lưu từ vào sổ tay**
+  - Người dùng tạo sổ tay.
+  - Người dùng lưu từ vào sổ tay.
+  - Có thể xóa từ khỏi sổ tay.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Flashcard + luyện học**
+  - Người dùng học các từ vựng theo các chuyên ngành bằng flashcard hoặc xem như 1 list.
+  - Có chức năng trắc nghiệm hoặc nối các thẻ từ (gồm từ tiếng Thái và nghĩa tiếng Việt).
+  - Có thể tạo flashcard từ sổ tay và share lên cho mọi người xem.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **Luyện đọc**
+  - Người dùng luyện đọc bằng đoạn văn (có phiên âm nếu có thể).
+  - Ấn vào từ thì sẽ có một ô popup lên dịch nhẹ.
 
-### `npm run eject`
+- **Góp ý**
+  - Người dùng góp ý sửa các từ nếu có sai sót.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 2. Các chức năng nâng cao
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **Dịch bằng lời nói**
+  - Nói tiếng Thái dịch tiếng Việt và ngược lại.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- **Dịch bằng hình ảnh**
+  - Người dùng chụp ảnh và dịch ảnh người dùng đăng lên.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- **Chatbot giúp học tiếng Thái (optional)**
+  - Người dùng có thể nhắn tin với chatbot hỏi về tiếng Thái.
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🚀 Quick Start
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd thai-dict-web
+```
 
-### Code Splitting
+2. **Setup Backend**
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Edit .env with your configuration
+npm run dev
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+3. **Setup Frontend** (in a new terminal)
+```bash
+cd frontend
+npm install
+npm start
 
-### Analyzing the Bundle Size
+## 📝 License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+This project is licensed under the MIT License.
 
-### Making a Progressive Web App
+## 🙏 Acknowledgments
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Thai language community
+- Vietnamese-Thai translation resources
