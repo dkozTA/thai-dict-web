@@ -1,0 +1,318 @@
+.learningPage {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.learningPage h1 {
+  color: #2c5aa0;
+  margin-bottom: 1rem;
+  font-size: 2.5rem;
+}
+
+.learningPage p {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.tabContainer {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.tab {
+  flex: 1;
+  padding: 1rem 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.tab:hover {
+  background: #e9ecef;
+}
+
+.activeTab {
+  background: #2c5aa0 !important;
+  color: white !important;
+}
+
+.tabContent {
+  padding: 2rem;
+  text-align: left;
+}
+
+/* Flashcards Section */
+.flashcardsSection h2,
+.quizSection h2,
+.notebookSection h2 {
+  color: #2c5aa0;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.collections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.collectionCard {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+  transition: transform 0.3s ease;
+}
+
+.collectionCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.collectionCard h3 {
+  margin: 0 0 0.5rem 0;
+  color: #2c5aa0;
+  font-size: 1.3rem;
+}
+
+.collectionCard p {
+  margin: 0 0 1rem 0;
+  color: #666;
+}
+
+.progress {
+  margin: 1rem 0;
+}
+
+.progressBar {
+  height: 8px;
+  background: #2c5aa0;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  margin-bottom: 0.5rem;
+}
+
+.progress span {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.studyButton {
+  width: 100%;
+  padding: 10px 16px;
+  background: #2c5aa0;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.studyButton:hover {
+  background: #1e3d6f;
+}
+
+/* Quiz Section */
+.quizOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.quizCard {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 2rem;
+  border: 1px solid #e9ecef;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.quizCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.quizCard h3 {
+  margin: 0 0 1rem 0;
+  color: #2c5aa0;
+  font-size: 1.4rem;
+}
+
+.quizCard p {
+  margin: 0 0 1.5rem 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.quizButton {
+  padding: 12px 24px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.quizButton:hover {
+  background: #218838;
+}
+
+/* Notebook Section */
+.notebookActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.createButton,
+.importButton {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.createButton {
+  background: #2c5aa0;
+  color: white;
+}
+
+.createButton:hover {
+  background: #1e3d6f;
+}
+
+.importButton {
+  background: #17a2b8;
+  color: white;
+}
+
+.importButton:hover {
+  background: #138496;
+}
+
+.savedCollections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.notebookCard {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+  transition: transform 0.3s ease;
+}
+
+.notebookCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.notebookCard h3 {
+  margin: 0 0 0.5rem 0;
+  color: #2c5aa0;
+  font-size: 1.3rem;
+}
+
+.notebookCard p {
+  margin: 0 0 1rem 0;
+  color: #666;
+}
+
+.cardActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.viewButton,
+.editButton,
+.shareButton {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.viewButton {
+  background: #6c757d;
+  color: white;
+}
+
+.viewButton:hover {
+  background: #5a6268;
+}
+
+.editButton {
+  background: #ffc107;
+  color: #212529;
+}
+
+.editButton:hover {
+  background: #e0a800;
+}
+
+.shareButton {
+  background: #28a745;
+  color: white;
+}
+
+.shareButton:hover {
+  background: #218838;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .learningPage {
+    padding: 1rem;
+  }
+  
+  .tabs {
+    flex-direction: column;
+  }
+  
+  .tab {
+    padding: 0.75rem 1rem;
+  }
+  
+  .tabContent {
+    padding: 1.5rem;
+  }
+  
+  .collections,
+  .quizOptions,
+  .savedCollections {
+    grid-template-columns: 1fr;
+  }
+  
+  .notebookActions {
+    flex-direction: column;
+  }
+}

@@ -51,6 +51,11 @@ backend/dist/
 .env.test.local
 .env.production.local
 
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
@@ -179,3 +184,5 @@ Thumbs.db
 *.crt
 config/local.json
 config/production.json
+secrets/
+config/secrets.js
