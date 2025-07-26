@@ -7,9 +7,10 @@ const Footer = () => {
       color: 'white', 
       textAlign: 'center', 
       padding: '1rem',
-      marginTop: '2rem' 
+      marginLeft: '70px',
+      transition: 'margin-left 0.3s ease'
     }}>
-      <p>&copy; 2025 Thai Dictionary. All rights reserved.</p>
+      <p>&copy; 2025 ThaiVie Dictionary. All rights reserved.</p>
     </footer>
   );
 };

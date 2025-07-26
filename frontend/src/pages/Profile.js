@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PageLayout from '../components/common/Pagelayout';
 import styles from '../styles/Profile.module.css';
 
 const Profile = () => {
@@ -22,6 +23,7 @@ const Profile = () => {
     e.preventDefault();
     // TODO: Implement authentication logic with Firebase
     console.log('Form submitted:', formData);
+    setIsLoggedIn(true); // For demo purposes
   };
 
   const handleLogout = () => {
@@ -36,136 +38,136 @@ const Profile = () => {
 
   if (isLoggedIn) {
     return (
-      <div className={styles.profilePage}>
-        <h1>👤 My Profile</h1>
-        
-        <div className={styles.profileContainer}>
-          <div className={styles.profileHeader}>
-            <div className={styles.avatar}>
-              <span>👤</span>
+      <PageLayout title="Tài khoản cá nhân" showUserInfo={false}>
+        <div className={styles.profileContent}>
+          <div className={styles.profileContainer}>
+            <div className={styles.profileHeader}>
+              <div className={styles.avatar}>
+                <span>👤</span>
+              </div>
+              <h2>Chào mừng, Người dùng!</h2>
+              <p>user@example.com</p>
             </div>
-            <h2>Welcome, User!</h2>
-            <p>user@example.com</p>
-          </div>
 
-          <div className={styles.profileStats}>
-            <div className={styles.statCard}>
-              <h3>📚 Words Learned</h3>
-              <span className={styles.statNumber}>45</span>
+            <div className={styles.profileStats}>
+              <div className={styles.statCard}>
+                <h3>📚 Từ đã học</h3>
+                <span className={styles.statNumber}>45</span>
+              </div>
+              <div className={styles.statCard}>
+                <h3>🎯 Điểm kiểm tra</h3>
+                <span className={styles.statNumber}>87%</span>
+              </div>
+              <div className={styles.statCard}>
+                <h3>📖 Bộ sưu tập</h3>
+                <span className={styles.statNumber}>3</span>
+              </div>
             </div>
-            <div className={styles.statCard}>
-              <h3>🎯 Quiz Score</h3>
-              <span className={styles.statNumber}>87%</span>
-            </div>
-            <div className={styles.statCard}>
-              <h3>📖 Collections</h3>
-              <span className={styles.statNumber}>3</span>
-            </div>
-          </div>
 
-          <div className={styles.profileActions}>
-            <button className={styles.editButton}>Edit Profile</button>
-            <button className={styles.logoutButton} onClick={handleLogout}>
-              Logout
-            </button>
+            <div className={styles.profileActions}>
+              <button className={styles.editButton}>Chỉnh sửa thông tin</button>
+              <button className={styles.logoutButton} onClick={handleLogout}>
+                Đăng xuất
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className={styles.profilePage}>
-      <h1>👤 {isLogin ? 'Login' : 'Sign Up'}</h1>
-      
-      <div className={styles.authContainer}>
-        <div className={styles.authTabs}>
-          <button 
-            className={`${styles.authTab} ${isLogin ? styles.activeTab : ''}`}
-            onClick={() => setIsLogin(true)}
-          >
-            Login
-          </button>
-          <button 
-            className={`${styles.authTab} ${!isLogin ? styles.activeTab : ''}`}
-            onClick={() => setIsLogin(false)}
-          >
-            Sign Up
-          </button>
-        </div>
+    <PageLayout title={isLogin ? 'Đăng nhập' : 'Đăng ký'} showUserInfo={false}>
+      <div className={styles.profileContent}>
+        <div className={styles.authContainer}>
+          <div className={styles.authTabs}>
+            <button 
+              className={`${styles.authTab} ${isLogin ? styles.activeTab : ''}`}
+              onClick={() => setIsLogin(true)}
+            >
+              Đăng nhập
+            </button>
+            <button 
+              className={`${styles.authTab} ${!isLogin ? styles.activeTab : ''}`}
+              onClick={() => setIsLogin(false)}
+            >
+              Đăng ký
+            </button>
+          </div>
 
-        <form onSubmit={handleSubmit} className={styles.authForm}>
-          {!isLogin && (
+          <form onSubmit={handleSubmit} className={styles.authForm}>
+            {!isLogin && (
+              <div className={styles.inputGroup}>
+                <label>Tên hiển thị:</label>
+                <input
+                  type="text"
+                  name="displayName"
+                  value={formData.displayName}
+                  onChange={handleInputChange}
+                  required
+                  className={styles.input}
+                />
+              </div>
+            )}
+
             <div className={styles.inputGroup}>
-              <label>Display Name:</label>
+              <label>Email:</label>
               <input
-                type="text"
-                name="displayName"
-                value={formData.displayName}
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleInputChange}
                 required
                 className={styles.input}
               />
             </div>
-          )}
 
-          <div className={styles.inputGroup}>
-            <label>Email:</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              className={styles.input}
-            />
-          </div>
-
-          <div className={styles.inputGroup}>
-            <label>Password:</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              className={styles.input}
-            />
-          </div>
-
-          {!isLogin && (
             <div className={styles.inputGroup}>
-              <label>Confirm Password:</label>
+              <label>Mật khẩu:</label>
               <input
                 type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
+                name="password"
+                value={formData.password}
                 onChange={handleInputChange}
                 required
                 className={styles.input}
               />
             </div>
-          )}
 
-          <button type="submit" className={styles.submitButton}>
-            {isLogin ? 'Login' : 'Sign Up'}
-          </button>
-        </form>
+            {!isLogin && (
+              <div className={styles.inputGroup}>
+                <label>Xác nhận mật khẩu:</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  required
+                  className={styles.input}
+                />
+              </div>
+            )}
 
-        <div className={styles.authFooter}>
-          <p>
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button 
-              type="button"
-              className={styles.linkButton}
-              onClick={() => setIsLogin(!isLogin)}
-            >
-              {isLogin ? 'Sign Up' : 'Login'}
+            <button type="submit" className={styles.submitButton}>
+              {isLogin ? 'Đăng nhập' : 'Đăng ký'}
             </button>
-          </p>
+          </form>
+
+          <div className={styles.authFooter}>
+            <p>
+              {isLogin ? "Chưa có tài khoản? " : "Đã có tài khoản? "}
+              <button 
+                type="button"
+                className={styles.linkButton}
+                onClick={() => setIsLogin(!isLogin)}
+              >
+                {isLogin ? 'Đăng ký' : 'Đăng nhập'}
+              </button>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
