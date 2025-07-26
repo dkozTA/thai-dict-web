@@ -9,6 +9,7 @@
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   margin-bottom: 2rem;
+  border: 1px solid #e5e5e5;
 }
 
 .searchForm {
@@ -20,21 +21,23 @@
 .searchInput {
   flex: 1;
   padding: 12px 20px;
-  border: 2px solid #ddd;
+  border: 2px solid #e5e5e5;
   border-radius: 8px;
   font-size: 16px;
   outline: none;
   transition: border-color 0.3s;
+  background: white;
+  color: #1a1a1a;
 }
 
 .searchInput:focus {
-  border-color: #2c5aa0;
-  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
 }
 
 .searchBtn {
   padding: 12px 24px;
-  background-color: #2c5aa0;
+  background-color: #1a1a1a;
   border: none;
   border-radius: 8px;
   color: white;
@@ -45,7 +48,7 @@
 }
 
 .searchBtn:hover:not(:disabled) {
-  background-color: #1e3d6f;
+  background-color: #333;
 }
 
 .searchBtn:disabled {
@@ -62,22 +65,23 @@
 
 .categoryBtn {
   padding: 8px 20px;
-  border: 2px solid #ddd;
+  border: 2px solid #e5e5e5;
   border-radius: 20px;
   background-color: white;
   cursor: pointer;
   transition: all 0.3s;
   font-weight: 500;
+  color: #1a1a1a;
 }
 
 .categoryBtn:hover {
-  background-color: #f8f9fa;
+  background-color: #f5f5f5;
 }
 
 .categoryBtn.active {
-  background-color: #2c5aa0;
+  background-color: #1a1a1a;
   color: white;
-  border-color: #2c5aa0;
+  border-color: #1a1a1a;
 }
 
 .errorMessage {
@@ -96,25 +100,26 @@
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   margin-bottom: 2rem;
+  border: 1px solid #e5e5e5;
 }
 
 .searchResults h3 {
-  color: #2c5aa0;
+  color: #1a1a1a;
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
 }
 
 .wordResult {
-  background: #f8f9fa;
+  background: #f9f9f9;
   padding: 1.5rem;
   margin: 1rem 0;
   border-radius: 8px;
-  border-left: 4px solid #2c5aa0;
+  border-left: 4px solid #1a1a1a;
 }
 
 .wordResult h4 {
   margin: 0 0 8px 0;
-  color: #2c5aa0;
+  color: #1a1a1a;
   font-size: 1.3rem;
 }
 
@@ -124,7 +129,7 @@
 }
 
 .wordResult strong {
-  color: #2c5aa0;
+  color: #1a1a1a;
 }
 
 .contentArea {
@@ -138,6 +143,7 @@
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border: 1px solid #e5e5e5;
 }
 
 .rightSidebar {
@@ -146,6 +152,7 @@
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   height: fit-content;
+  border: 1px solid #e5e5e5;
 }
 
 .section {
@@ -156,7 +163,7 @@
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #2c5aa0;
+  color: #1a1a1a;
 }
 
 .suggestionsList {
@@ -179,16 +186,17 @@
 
 .wordChip {
   padding: 8px 16px;
-  background-color: #e9ecef;
-  border: none;
+  background-color: #f5f5f5;
+  border: 1px solid #e5e5e5;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s;
   font-size: 14px;
+  color: #1a1a1a;
 }
 
 .wordChip:hover {
-  background-color: #2c5aa0;
+  background-color: #1a1a1a;
   color: white;
 }
 
@@ -197,7 +205,7 @@
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #2c5aa0;
+  color: #1a1a1a;
 }
 
 .helpSection ul,

@@ -1,14 +1,8 @@
-.profilePage {
+.profileContent {
   max-width: 600px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-}
-
-.profilePage h1 {
-  color: #2c5aa0;
-  margin-bottom: 2rem;
-  font-size: 2.5rem;
 }
 
 /* Profile Container */
@@ -17,6 +11,7 @@
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border: 1px solid #e5e5e5;
 }
 
 .profileHeader {
@@ -27,7 +22,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: #2c5aa0;
+  background: #1a1a1a;
   color: white;
   display: flex;
   align-items: center;
@@ -38,7 +33,7 @@
 
 .profileHeader h2 {
   margin: 0 0 0.5rem 0;
-  color: #333;
+  color: #1a1a1a;
 }
 
 .profileHeader p {
@@ -55,10 +50,10 @@
 }
 
 .statCard {
-  background: #f8f9fa;
+  background: #f9f9f9;
   padding: 1.5rem;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 1px solid #e5e5e5;
 }
 
 .statCard h3 {
@@ -70,7 +65,7 @@
 .statNumber {
   font-size: 2rem;
   font-weight: bold;
-  color: #2c5aa0;
+  color: #1a1a1a;
 }
 
 /* Profile Actions */
@@ -92,12 +87,12 @@
 }
 
 .editButton {
-  background: #2c5aa0;
+  background: #1a1a1a;
   color: white;
 }
 
 .editButton:hover {
-  background: #1e3d6f;
+  background: #333;
 }
 
 .logoutButton {
@@ -116,12 +111,13 @@
   padding: 2rem;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   text-align: left;
+  border: 1px solid #e5e5e5;
 }
 
 .authTabs {
   display: flex;
   margin-bottom: 2rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #e5e5e5;
 }
 
 .authTab {
@@ -137,12 +133,12 @@
 }
 
 .authTab:hover {
-  background: #f8f9fa;
+  background: #f9f9f9;
 }
 
 .activeTab {
-  color: #2c5aa0 !important;
-  border-bottom: 2px solid #2c5aa0;
+  color: #1a1a1a !important;
+  border-bottom: 2px solid #1a1a1a;
 }
 
 .authForm {
@@ -157,29 +153,31 @@
 .inputGroup label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: #1a1a1a;
   font-weight: 600;
 }
 
 .input {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #ddd;
+  border: 2px solid #e5e5e5;
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.3s;
+  background: white;
+  color: #1a1a1a;
 }
 
 .input:focus {
   outline: none;
-  border-color: #2c5aa0;
-  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
 }
 
 .submitButton {
   width: 100%;
   padding: 15px;
-  background: #2c5aa0;
+  background: #1a1a1a;
   color: white;
   border: none;
   border-radius: 8px;
@@ -190,32 +188,32 @@
 }
 
 .submitButton:hover {
-  background: #1e3d6f;
+  background: #333;
 }
 
 .authFooter {
   text-align: center;
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #e5e5e5;
 }
 
 .linkButton {
   background: none;
   border: none;
-  color: #2c5aa0;
+  color: #1a1a1a;
   cursor: pointer;
   text-decoration: underline;
   font-size: inherit;
 }
 
 .linkButton:hover {
-  color: #1e3d6f;
+  color: #333;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .profilePage {
+  .profileContent {
     padding: 1rem;
   }
   

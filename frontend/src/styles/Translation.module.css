@@ -1,20 +1,8 @@
-.translationPage {
+.translationContent {
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-}
-
-.translationPage h1 {
-  color: #2c5aa0;
-  margin-bottom: 1rem;
-  font-size: 2.5rem;
-}
-
-.translationPage p {
-  color: #666;
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
 }
 
 .translationContainer {
@@ -23,6 +11,7 @@
   padding: 2rem;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   margin-bottom: 3rem;
+  border: 1px solid #e5e5e5;
 }
 
 .languageSelector {
@@ -35,21 +24,21 @@
 
 .languageSelect {
   padding: 10px 15px;
-  border: 2px solid #ddd;
+  border: 2px solid #e5e5e5;
   border-radius: 8px;
   font-size: 16px;
   background: white;
-  color: #333;
+  color: #1a1a1a;
 }
 
 .languageSelect:focus {
   outline: none;
-  border-color: #2c5aa0;
+  border-color: #1a1a1a;
 }
 
 .swapButton {
   padding: 10px 15px;
-  background: #2c5aa0;
+  background: #1a1a1a;
   color: white;
   border: none;
   border-radius: 8px;
@@ -59,7 +48,7 @@
 }
 
 .swapButton:hover {
-  background: #1e3d6f;
+  background: #333;
 }
 
 .translationForm {
@@ -82,7 +71,7 @@
 .inputSection label,
 .outputSection label {
   font-weight: 600;
-  color: #2c5aa0;
+  color: #1a1a1a;
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
 }
@@ -90,30 +79,32 @@
 .inputTextarea,
 .outputTextarea {
   padding: 15px;
-  border: 2px solid #ddd;
+  border: 2px solid #e5e5e5;
   border-radius: 8px;
   font-size: 16px;
   line-height: 1.5;
   resize: vertical;
   font-family: inherit;
+  background: white;
+  color: #1a1a1a;
 }
 
 .inputTextarea:focus {
   outline: none;
-  border-color: #2c5aa0;
-  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
 }
 
 .outputTextarea {
-  background: #f8f9fa;
-  border-color: #e9ecef;
+  background: #f9f9f9;
+  border-color: #e5e5e5;
 }
 
 .translateButton {
   width: 100%;
   padding: 15px 30px;
   font-size: 18px;
-  background-color: #2c5aa0;
+  background-color: #1a1a1a;
   color: white;
   border: none;
   border-radius: 8px;
@@ -123,7 +114,7 @@
 }
 
 .translateButton:hover:not(:disabled) {
-  background-color: #1e3d6f;
+  background-color: #333;
 }
 
 .translateButton:disabled {
@@ -153,7 +144,7 @@
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e5e5e5;
 }
 
 .featureCard:hover {
@@ -163,7 +154,7 @@
 
 .featureCard h3 {
   margin: 0 0 1rem 0;
-  color: #2c5aa0;
+  color: #1a1a1a;
   font-size: 1.3rem;
 }
 
@@ -175,12 +166,8 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .translationPage {
+  .translationContent {
     padding: 1rem;
-  }
-  
-  .translationPage h1 {
-    font-size: 2rem;
   }
   
   .translationContainer {
