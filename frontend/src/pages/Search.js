@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { searchThaiWords } from '../services/dictionaryhandle';
+import React, { useState, useEffect } from 'react';
+import { searchThaiWords, getPopularWords } from '../services/dictionaryhandle';
 import PageLayout from '../components/common/Pagelayout';
 import styles from '../styles/Search.module.css';
+import ThaiText from '../components/common/ThaiText';
+import { containsThaiCharacters } from '../utils/textUtils';
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,14 +11,67 @@ const Search = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [popularWords, setPopularWords] = useState([]);
+  const [historyWords, setHistoryWords] = useState([]);
 
-  // fake
-  const historyWords = [''];
-  const popularWords = ['กิน', 'ดื่ม', 'นอน', 'ไป', 'ทำ'];
-  const suggestions = ['Thử tìm từ cơ bản', 'Sử dụng phiên âm', 'Kiểm tra chính tả'];
+  // Suggestions for empty search
+  const suggestions = [
+    'Thử tìm từ cơ bản như "กิน" (ăn)',
+    'Sử dụng phiên âm Latin như "kin"',
+    'Kiểm tra chính tả nếu không tìm thấy kết quả'
+  ];
+
+  // Load popular words and search history on component mount
+  useEffect(() => {
+    // Load popular words
+    const loadPopularWords = async () => {
+      try {
+        const words = await getPopularWords(5);
+        setPopularWords(words.map(w => w.word));
+      } catch (error) {
+        console.error('Failed to load popular words:', error);
+        setPopularWords(['กิน', 'ดื่ม', 'นอน', 'ไป', 'ทำ']); // Fallback with Thai words
+      }
+    };
+
+    // Load search history from localStorage
+    const loadSearchHistory = () => {
+      try {
+        const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+        setHistoryWords(history);
+      } catch (error) {
+        console.error('Failed to load search history:', error);
+        setHistoryWords([]);
+      }
+    };
+
+    loadPopularWords();
+    loadSearchHistory();
+  }, []);
+
+  // Save search term to history
+  const saveToHistory = (term) => {
+    const history = [...historyWords];
+    
+    // Remove if already exists
+    const existingIndex = history.indexOf(term);
+    if (existingIndex !== -1) {
+      history.splice(existingIndex, 1);
+    }
+    
+    // Add to the beginning
+    history.unshift(term);
+    
+    // Limit to 10 items
+    const limitedHistory = history.slice(0, 10);
+    
+    // Update state and localStorage
+    setHistoryWords(limitedHistory);
+    localStorage.setItem('searchHistory', JSON.stringify(limitedHistory));
+  };
 
   const handleSearch = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     
     if (!searchTerm.trim()) {
       setError('Vui lòng nhập từ cần tìm');
@@ -29,6 +84,11 @@ const Search = () => {
     try {
       const results = await searchThaiWords(searchTerm);
       setSearchResults(results);
+
+      // Save to history only if search was successful
+      if (results.length > 0) {
+        saveToHistory(searchTerm);
+      }
 
       if (results.length === 0) {
         setError('Không tìm thấy từ nào. Hãy thử từ khác.');
@@ -43,12 +103,21 @@ const Search = () => {
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
-    console.log('Selected category:', category);
+    // Implement category-specific search when needed
   };
 
   const handleWordClick = (word) => {
     setSearchTerm(word);
-    console.log('Clicked word:', word);
+    // Search immediately when clicking a word
+    setTimeout(() => {
+      handleSearch();
+    }, 100);
+  };
+
+  // Clear search history
+  const clearHistory = () => {
+    setHistoryWords([]);
+    localStorage.removeItem('searchHistory');
   };
 
   return (
@@ -64,6 +133,7 @@ const Search = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className={styles.searchInput}
               disabled={loading}
+              lang="th" // Add lang attribute for better input handling
             />
             <button 
               type="submit" 
@@ -96,19 +166,30 @@ const Search = () => {
             <h3>Kết quả tìm kiếm:</h3>
             {searchResults.map((word) => (
               <div key={word.id} className={styles.wordResult}>
-                <h4>{word.word}</h4>
-                <p><strong>Tiếng Việt:</strong> {word.vietnamese_meaning}</p> 
-                {word.phonetic && (
-                  <p><strong>Phiên âm:</strong> {word.phonetic}</p>
-                )}
-                {word.grammar_note && (
-                  <p><strong>Ngữ pháp:</strong> {word.grammar_note}</p> 
-                )}
-                {word.note && (
-                  <p><strong>Ghi chú:</strong> {word.note}</p>
-                )}
-                {word.category && (
-                  <p><strong>Danh mục:</strong> {word.category}</p> 
+                <h4>
+                  <ThaiText 
+                    text={word.word} 
+                    size="large" 
+                    showOriginal={true} 
+                    phonetic={word.phonetic} 
+                    showPhonetic={!!word.phonetic} 
+                  />
+                </h4>
+                <p><strong>Tiếng Việt:</strong> {word.vietnamese_meaning}</p>
+                {word.examples && word.examples.length > 0 && (
+                  <div>
+                    <p><strong>Ví dụ:</strong></p>
+                    <ul>
+                      {word.examples.map((example, index) => (
+                        <li key={index}>
+                          <ThaiText 
+                            text={example} 
+                            showOriginal={true}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
             ))}
@@ -117,46 +198,65 @@ const Search = () => {
 
         {/* Content Area */}
         <div className={styles.contentArea}>
-          <div className={styles.mainSection}>
-            {/* Suggestions */}
-            <div className={styles.section}>
-              <h3>💡 Gợi ý:</h3>
-              <ul className={styles.suggestionsList}>
-                {suggestions.map((suggestion, index) => (
-                  <li key={index}>{suggestion}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* History */}
-            <div className={styles.section}>
-              <h3>📜 Lịch sử tìm kiếm:</h3>
-              <div className={styles.wordChips}>
-                {historyWords.map((word, index) => (
-                  <button
-                    key={index}
-                    className={styles.wordChip}
-                    onClick={() => handleWordClick(word)}
-                  >
-                    {word}
-                  </button>
-                ))}
+          {/* Left Sidebar and Main Section */}
+          <div className={styles.leftContent}>
+            <div className={styles.mainSection}>
+              {/* Suggestions */}
+              <div className={styles.section}>
+                <h3>💡 Gợi ý:</h3>
+                <ul className={styles.suggestionsList}>
+                  {suggestions.map((suggestion, index) => (
+                    <li key={index}>{suggestion}</li>
+                  ))}
+                </ul>
               </div>
-            </div>
 
-            {/* Popular Words */}
-            <div className={styles.section}>
-              <h3>🔥 Từ khóa phổ biến:</h3>
-              <div className={styles.wordChips}>
-                {popularWords.map((word, index) => (
-                  <button
-                    key={index}
-                    className={styles.wordChip}
-                    onClick={() => handleWordClick(word)}
-                  >
-                    {word}
-                  </button>
-                ))}
+              {/* History */}
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <h3>📜 Lịch sử tìm kiếm:</h3>
+                  {historyWords.length > 0 && (
+                    <button 
+                      className={styles.clearButton} 
+                      onClick={clearHistory}
+                    >
+                      Xóa
+                    </button>
+                  )}
+                </div>
+                {historyWords.length > 0 ? (
+                  <div className={styles.wordChips}>
+                    {historyWords.map((word, index) => (
+                      <button
+                        key={index}
+                        className={styles.wordChip}
+                        onClick={() => handleWordClick(word)}
+                        lang="th"
+                      >
+                        {word}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className={styles.emptyMessage}>Chưa có từ nào trong lịch sử</p>
+                )}
+              </div>
+
+              {/* Popular Words */}
+              <div className={styles.section}>
+                <h3>🔥 Từ khóa phổ biến:</h3>
+                <div className={styles.wordChips}>
+                  {popularWords.map((word, index) => (
+                    <button
+                      key={index}
+                      className={styles.wordChip}
+                      onClick={() => handleWordClick(word)}
+                      lang="th" // Add lang attribute for Thai text
+                    >
+                      {word}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

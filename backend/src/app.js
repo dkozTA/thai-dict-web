@@ -7,8 +7,23 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Ensure proper UTF-8 encoding
+app.use(express.json({ 
+  limit: '10mb',
+  extended: true,
+  parameterLimit: 50000,
+  charset: 'utf-8'
+}));
+
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      fontSrc: ["'self'", "https:", "data:"],
+    }
+  }
+}));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -26,8 +41,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.urlencoded({ 
+  extended: true, 
+  limit: '10mb',
+  charset: 'utf-8'
+}));
 
 // Health check route
 app.get('/', (req, res) => {
@@ -38,14 +56,15 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes (will be added later)
+// API Routes
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Routes will be added here:
+// Register API routes
+app.use('/api/dictionary', require('./routes/dictionary'));
+// Uncomment these as you implement them:
 // app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/dictionary', require('./routes/dictionary'));
 // app.use('/api/translation', require('./routes/translation'));
 // app.use('/api/user', require('./routes/user'));
 // app.use('/api/flashcard', require('./routes/flashcard'));
@@ -65,8 +84,7 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;

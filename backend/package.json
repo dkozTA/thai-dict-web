@@ -6,22 +6,41 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "test": "jest"
+    "test": "jest",
+    "import-excel": "node src/scripts/runImport.js",
+    "import-pdf": "node src/scripts/runPDFImport.js",
+    "validate-import": "node src/scripts/validateImport.js",
+    "clear-dictionary": "node src/scripts/runClear.js",
+    "clear-all": "node src/scripts/runClear.js --force",
+    "clear-imports": "node src/scripts/runClear.js --imports",
+    "clear-excel": "node src/scripts/runClear.js --source excel_import",
+    "clear-pdf": "node src/scripts/runClear.js --source pdf_import",
+    "test-api": "node src/scripts/testApi.js",
+    "setup-thai-font": "node src/scripts/setupThaiFont.js",
+    "test-thai-font": "node src/scripts/testThaiFont.js",
+    "test-thai-text": "node src/scripts/testThaiText.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^7.0.0",
+    "axios": "^1.11.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0",
-    "multer": "1.4.5-lts.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "firebase-admin": "^13.4.0",
     "helmet": "^6.0.0",
-    "express-rate-limit": "^6.7.0"
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.0",
+    "multer": "1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "pdf2pic": "^3.2.0",
+    "pdfjs-dist": "^5.4.54",
+    "tesseract.js": "^6.0.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22",
-    "jest": "^29.5.0"
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22"
   },
   "keywords": [
     "thai",

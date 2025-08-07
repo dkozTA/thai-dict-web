@@ -1,0 +1,25 @@
+[lang="th"] {
+  font-family: 'Sarabun', sans-serif;
+  font-size: 1.1em; /* Slightly larger for readability */
+}
+
+.thai-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.thai-text-sm { font-size: 0.9rem; }
+.thai-text-md { font-size: 1rem; }
+.thai-text-lg { font-size: 1.2rem; }
+
+.thai-original {
+  color: #666;
+  font-size: 0.85em;
+}
+
+.thai-phonetic {
+  color: #555;
+  font-style: italic;
+  font-size: 0.9em;
+}

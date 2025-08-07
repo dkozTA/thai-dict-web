@@ -1,0 +1,19 @@
+/* Thai font configuration */
+@font-face {
+  font-family: 'Sarabun';
+  src: url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Thai font class */
+.thai-font {
+  font-family: 'Sarabun', 'Tahoma', 'Arial', sans-serif;
+}
+
+/* Thai text with proper line height */
+[lang="th"] {
+  font-family: 'Sarabun', 'Tahoma', 'Arial', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
