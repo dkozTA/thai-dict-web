@@ -8,18 +8,18 @@ axios.defaults.headers.common['Accept-Charset'] = 'UTF-8';
 axios.defaults.headers.common['Content-Type'] = 'application/json; charset=utf-8';
 
 // Search for Thai words using our API
-export const searchThaiWords = async (searchTerm) => {
+export const searchThaiWords = async (searchTerm, searchType = 'all') => {
   try {
     if (!searchTerm.trim()) return [];
 
-    // Ensure proper encoding of Thai characters in the URL
-    const encodedTerm = encodeURIComponent(searchTerm.trim());
-    
-    // Add header to ensure proper UTF-8 handling
+    console.log('Searching for:', searchTerm, 'with type:', searchType);
+
+    // Don't encode Vietnamese characters - let axios handle it properly
     const response = await axios.get(`${API_URL}/dictionary/search`, {
       params: {
-        query: encodedTerm,
-        limit: 20
+        query: searchTerm.trim(), // Don't encode here
+        limit: 20,
+        searchType: searchType
       },
       headers: {
         'Accept-Charset': 'UTF-8',
@@ -28,10 +28,13 @@ export const searchThaiWords = async (searchTerm) => {
     });
 
     if (response.data.success) {
-      // Ensure Thai text is properly decoded
+      console.log('Search results:', response.data.data);
+      
+      // Process results for display
       const results = response.data.data.map(word => ({
         ...word,
-        word: decodeThaiText(word.word),
+        // Ensure Thai text displays correctly
+        word: word.word ? decodeThaiText(word.word) : word.word,
         phonetic: word.phonetic ? decodeThaiText(word.phonetic) : word.phonetic,
         examples: word.examples ? word.examples.map(ex => decodeThaiText(ex)) : []
       }));
@@ -82,18 +85,16 @@ export const getWordById = async (wordId) => {
 // Get popular words
 export const getPopularWords = async (limit = 5) => {
   try {
-    const response = await axios.get(`${API_URL}/dictionary/popular`, {
-      params: { limit }
-    });
-    
+    const response = await axios.get(`${API_URL}/dictionary/popular`, { params: { limit } });
     if (response.data.success) {
-      return response.data.data;
-    } else {
-      throw new Error(response.data.message || 'Failed to get popular words');
+      return response.data.data.map(word => ({
+        ...word,
+        word: decodeThaiText(word.word)
+      }));
     }
+    return [];
   } catch (error) {
-    console.error('Get popular words error:', error);
-    // Return empty array instead of throwing
+    console.error('Error fetching popular words:', error);
     return [];
   }
 };

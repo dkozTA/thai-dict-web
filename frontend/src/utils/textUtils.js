@@ -121,3 +121,17 @@ export const formatThaiText = (text) => {
     return text; // Return original if conversion fails
   }
 };
+
+
+/**
+ * Check if text contains Vietnamese characters
+ * @param {string} text - Text to check
+ * @returns {boolean} - Whether text contains Vietnamese characters
+ */
+export const containsVietnameseCharacters = (text) => {
+  if (!text) return false;
+  
+  // Vietnamese-specific characters
+  const vietnamesePattern = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
+  return vietnamesePattern.test(text);
+};

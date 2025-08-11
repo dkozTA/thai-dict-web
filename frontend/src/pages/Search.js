@@ -1,285 +1,221 @@
 import React, { useState, useEffect } from 'react';
-import { searchThaiWords, getPopularWords } from '../services/dictionaryhandle';
 import PageLayout from '../components/common/Pagelayout';
 import styles from '../styles/Search.module.css';
 import ThaiText from '../components/common/ThaiText';
-import { containsThaiCharacters } from '../utils/textUtils';
+import { searchThaiWords, getPopularWords } from '../services/dictionaryhandle';
+import { containsThaiCharacters, containsVietnameseCharacters } from '../utils/textUtils';
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Từ vựng');
-  const [searchResults, setSearchResults] = useState([]);
+  const [results, setResults] = useState([]);
+  const [selectedWord, setSelectedWord] = useState(null);
+  const [relatedWords, setRelatedWords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [popularWords, setPopularWords] = useState([]);
   const [historyWords, setHistoryWords] = useState([]);
 
-  // Suggestions for empty search
-  const suggestions = [
-    'Thử tìm từ cơ bản như "กิน" (ăn)',
-    'Sử dụng phiên âm Latin như "kin"',
-    'Kiểm tra chính tả nếu không tìm thấy kết quả'
-  ];
-
-  // Load popular words and search history on component mount
+  // Load history on mount
   useEffect(() => {
-    // Load popular words
-    const loadPopularWords = async () => {
-      try {
-        const words = await getPopularWords(5);
-        setPopularWords(words.map(w => w.word));
-      } catch (error) {
-        console.error('Failed to load popular words:', error);
-        setPopularWords(['กิน', 'ดื่ม', 'นอน', 'ไป', 'ทำ']); // Fallback with Thai words
-      }
-    };
-
-    // Load search history from localStorage
-    const loadSearchHistory = () => {
-      try {
-        const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
-        setHistoryWords(history);
-      } catch (error) {
-        console.error('Failed to load search history:', error);
-        setHistoryWords([]);
-      }
-    };
-
-    loadPopularWords();
-    loadSearchHistory();
+    try {
+      const h = JSON.parse(localStorage.getItem('searchHistory')) || [];
+      setHistoryWords(h);
+    } catch {
+      setHistoryWords([]);
+    }
   }, []);
 
-  // Save search term to history
-  const saveToHistory = (term) => {
-    const history = [...historyWords];
-    
-    // Remove if already exists
-    const existingIndex = history.indexOf(term);
-    if (existingIndex !== -1) {
-      history.splice(existingIndex, 1);
+  // Auto select first result
+  useEffect(() => {
+    if (results.length > 0) {
+      setSelectedWord(results[0]);
+      setRelatedWords(results.slice(1, 6));
+    } else {
+      setSelectedWord(null);
+      setRelatedWords([]);
     }
-    
-    // Add to the beginning
-    history.unshift(term);
-    
-    // Limit to 10 items
-    const limitedHistory = history.slice(0, 10);
-    
-    // Update state and localStorage
-    setHistoryWords(limitedHistory);
-    localStorage.setItem('searchHistory', JSON.stringify(limitedHistory));
+  }, [results]);
+
+  const saveToHistory = (term) => {
+    const next = [term, ...historyWords.filter(t => t !== term)].slice(0, 10);
+    setHistoryWords(next);
+    localStorage.setItem('searchHistory', JSON.stringify(next));
   };
 
   const handleSearch = async (e) => {
     if (e) e.preventDefault();
-    
     if (!searchTerm.trim()) {
-      setError('Vui lòng nhập từ cần tìm');
+      setError('Nhập từ cần tìm');
       return;
     }
-
     setLoading(true);
     setError('');
-
     try {
-      const results = await searchThaiWords(searchTerm);
-      setSearchResults(results);
-
-      // Save to history only if search was successful
-      if (results.length > 0) {
-        saveToHistory(searchTerm);
+      // Decide search type
+      let searchType = 'all';
+      if (selectedCategory === 'Từ vựng') {
+        if (containsVietnameseCharacters(searchTerm)) searchType = 'meaning';
+        else if (containsThaiCharacters(searchTerm)) searchType = 'word';
+        else if (/^[a-zA-Z0-9\s\-\(\)]+$/.test(searchTerm)) searchType = 'phonetic';
       }
-
-      if (results.length === 0) {
-        setError('Không tìm thấy từ nào. Hãy thử từ khác.');
-      }
+      const data = await searchThaiWords(searchTerm, searchType);
+      setResults(data);
+      if (data.length > 0) saveToHistory(searchTerm);
+      if (data.length === 0) setError('Không tìm thấy kết quả');
     } catch (err) {
-      setError('Tìm kiếm thất bại. Vui lòng thử lại.');
-      console.error('Search error:', err);
+      console.error(err);
+      setError('Tìm kiếm thất bại');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
-    // Implement category-specific search when needed
+  const extractHeadlineMeaning = (text) => {
+    if (!text) return '';
+    const first = text.split(/(?<=\.)\s+|;|,/)[0];
+    return first.trim();
   };
 
-  const handleWordClick = (word) => {
-    setSearchTerm(word);
-    // Search immediately when clicking a word
-    setTimeout(() => {
-      handleSearch();
-    }, 100);
-  };
-
-  // Clear search history
-  const clearHistory = () => {
-    setHistoryWords([]);
-    localStorage.removeItem('searchHistory');
+  const highlightTerm = (text) => {
+    if (!text || !searchTerm) return text;
+    const rex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'ig');
+    return text.replace(rex, '<mark>$1</mark>');
   };
 
   return (
-    <PageLayout title="Tra cứu từ điển">
-      <div className={styles.searchContent}>
-        {/* Search Section */}
-        <div className={styles.searchSection}>
-          <form onSubmit={handleSearch} className={styles.searchForm}>
+    <PageLayout title="Tra cứu">
+      <div className={styles.newSearchWrapper}>
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className={styles.newSearchBar}>
             <input
               type="text"
-              placeholder="Nhập từ tiếng Thái..."
+              className={styles.newSearchInput}
+              placeholder="Nhập từ..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={styles.searchInput}
+              onChange={(e)=>setSearchTerm(e.target.value)}
               disabled={loading}
-              lang="th" // Add lang attribute for better input handling
+              lang="th"
             />
-            <button 
-              type="submit" 
-              className={styles.searchBtn}
-              disabled={loading || !searchTerm.trim()}
-            >
-              {loading ? '⏳ Đang tìm...' : '🔍 Tìm kiếm'}
+            <button type="submit" className={styles.newSearchButton} disabled={loading}>
+              {loading ? 'Đang tìm...' : '🔍'}
             </button>
-          </form>
+        </form>
 
-          {/* Category Buttons */}
-          <div className={styles.categoryButtons}>
-            {['Từ vựng', 'Mẫu câu', 'Ngữ pháp'].map((category) => (
-              <button
-                key={category}
-                className={`${styles.categoryBtn} ${selectedCategory === category ? styles.active : ''}`}
-                onClick={() => handleCategoryClick(category)}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {error && <div className={styles.errorMessage}>{error}</div>}
+        {/* Category Chips */}
+        <div className={styles.modeChips}>
+          {['Từ vựng','Mẫu câu','Ngữ pháp'].map(cat => (
+            <button
+              key={cat}
+              onClick={()=>setSelectedCategory(cat)}
+              className={`${styles.modeChip} ${selectedCategory===cat?styles.activeMode:''}`}
+              type="button"
+            >
+              {cat}
+            </button>
+          ))}
         </div>
 
-        {/* Search Results */}
-        {searchResults.length > 0 && (
-          <div className={styles.searchResults}>
-            <h3>Kết quả tìm kiếm:</h3>
-            {searchResults.map((word) => (
-              <div key={word.id} className={styles.wordResult}>
-                <h4>
-                  <ThaiText 
-                    text={word.word} 
-                    size="large" 
-                    showOriginal={true} 
-                    phonetic={word.phonetic} 
-                    showPhonetic={!!word.phonetic} 
-                  />
-                </h4>
-                <p><strong>Tiếng Việt:</strong> {word.vietnamese_meaning}</p>
-                {word.examples && word.examples.length > 0 && (
-                  <div>
-                    <p><strong>Ví dụ:</strong></p>
-                    <ul>
-                      {word.examples.map((example, index) => (
-                        <li key={index}>
-                          <ThaiText 
-                            text={example} 
-                            showOriginal={true}
-                          />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Content Area */}
-        <div className={styles.contentArea}>
-          {/* Left Sidebar and Main Section */}
-          <div className={styles.leftContent}>
-            <div className={styles.mainSection}>
-              {/* Suggestions */}
-              <div className={styles.section}>
-                <h3>💡 Gợi ý:</h3>
-                <ul className={styles.suggestionsList}>
-                  {suggestions.map((suggestion, index) => (
-                    <li key={index}>{suggestion}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* History */}
-              <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <h3>📜 Lịch sử tìm kiếm:</h3>
-                  {historyWords.length > 0 && (
-                    <button 
-                      className={styles.clearButton} 
-                      onClick={clearHistory}
-                    >
-                      Xóa
-                    </button>
+        <div className={styles.layout}>
+          {/* Left Column */}
+            <div className={styles.leftColumn}>
+              <div className={styles.panel}>
+                <div className={styles.panelTitle}>
+                  Kết quả tra cứu cho “{searchTerm || '...'}”
+                </div>
+                <div className={styles.resultList}>
+                  {loading && <div className={styles.placeholderBox}></div>}
+                  {!loading && results.length === 0 && (
+                    <div className={styles.emptyState}>Không có kết quả</div>
                   )}
-                </div>
-                {historyWords.length > 0 ? (
-                  <div className={styles.wordChips}>
-                    {historyWords.map((word, index) => (
-                      <button
-                        key={index}
-                        className={styles.wordChip}
-                        onClick={() => handleWordClick(word)}
-                        lang="th"
-                      >
-                        {word}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className={styles.emptyMessage}>Chưa có từ nào trong lịch sử</p>
-                )}
-              </div>
-
-              {/* Popular Words */}
-              <div className={styles.section}>
-                <h3>🔥 Từ khóa phổ biến:</h3>
-                <div className={styles.wordChips}>
-                  {popularWords.map((word, index) => (
-                    <button
-                      key={index}
-                      className={styles.wordChip}
-                      onClick={() => handleWordClick(word)}
-                      lang="th" // Add lang attribute for Thai text
+                  {!loading && results.map(w => (
+                    <div
+                      key={w.id}
+                      className={`${styles.resultItem} ${selectedWord && selectedWord.id===w.id?styles.selectedItem:''}`}
+                      onClick={()=>setSelectedWord(w)}
                     >
-                      {word}
-                    </button>
+                      <div className={styles.resultWord}>{w.word_transliterated || w.word}</div>
+                      <div className={styles.resultMeaning}>
+                        {extractHeadlineMeaning(w.vietnamese_meaning)}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Right Sidebar */}
-          <div className={styles.rightSidebar}>
-            <div className={styles.helpSection}>
-              <h4>📖 Hướng dẫn sử dụng:</h4>
-              <ul>
-                <li>Nhập từ tiếng Thái vào ô tìm kiếm</li>
-                <li>Chọn loại từ bạn muốn tìm</li>
-                <li>Nhấp vào từ trong lịch sử để tìm lại</li>
-              </ul>
+              <div className={styles.panel}>
+                <div className={styles.panelTitleSmall}>Các từ liên quan:</div>
+                <div className={styles.relatedList}>
+                  {relatedWords.map(r => (
+                    <div
+                      key={r.id}
+                      className={styles.relatedItem}
+                      onClick={()=>setSelectedWord(r)}
+                    >
+                      <div className={styles.relatedWord}>{r.word_transliterated || r.word}</div>
+                      <div className={styles.relatedMeaning}>
+                        {extractHeadlineMeaning(r.vietnamese_meaning)}
+                      </div>
+                    </div>
+                  ))}
+                  {relatedWords.length === 0 && <div className={styles.emptyStateMini}>Không có</div>}
+                </div>
+              </div>
             </div>
-            
-            <div className={styles.feedbackSection}>
-              <h4>💭 Góp ý:</h4>
-              <ul>
-                <li>Báo lỗi từ điển không chính xác</li>
-                <li>Đề xuất từ mới cần thêm</li>
-                <li>Ý kiến cải thiện giao diện</li>
-              </ul>
-            </div>
+
+          {/* Main Detail */}
+          <div className={styles.mainCard}>
+            {selectedWord ? (
+              <>
+                <div className={styles.wordHeaderLine}>
+                  <div className={styles.wordTitle}>
+                    {(selectedWord.word_transliterated || selectedWord.word || '').toUpperCase()}
+                  </div>
+                  {/* Placeholder for add button */}
+                  <button className={styles.addBtn} type="button" title="Thêm">
+                    +
+                  </button>
+                </div>
+
+                <div className={styles.sectionRow}>
+                  <div className={styles.sectionLabel}>phiên âm:  </div>
+                  <div className={styles.sectionValue}>
+                    {selectedWord.word_transliterated || '(chưa có)'}
+                  </div>
+                </div>
+
+                <div className={styles.headMeaningBox}>
+                  {extractHeadlineMeaning(selectedWord.vietnamese_meaning) || 'Là danh từ or ...'}
+                </div>
+
+                <div className={styles.sectionBlock}>
+                  <div className={styles.blockTitle}>Nghĩa...</div>
+                  <div
+                    className={styles.blockContent}
+                    dangerouslySetInnerHTML={{__html: highlightTerm(selectedWord.vietnamese_meaning)}}
+                  />
+                </div>
+
+                <div className={styles.sectionBlock}>
+                  <div className={styles.blockTitle}>Ví dụ:</div>
+                  <div className={styles.examplesBlock}>
+                    {(selectedWord.examples || []).slice(0,5).map((ex,i)=>(
+                      <div key={i} className={styles.exampleLine}>
+                        <span className={styles.exampleIndex}>VD{i+1}</span>
+                        <ThaiText text={ex} size="small" />
+                      </div>
+                    ))}
+                    {(selectedWord.examples || []).length === 0 && (
+                      <div className={styles.emptyStateMini}>Chưa có ví dụ....</div>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className={styles.placeholderDetail}>
+                Nhập từ và chọn kết quả để xem chi tiết
+              </div>
+            )}
+            {error && <div className={styles.errorInline}>{error}</div>}
           </div>
         </div>
       </div>
