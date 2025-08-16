@@ -1,0 +1,146 @@
+.nbOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding-top: 8vh;
+  z-index: 2000;
+}
+
+.nbModal {
+  background:#fff;
+  width: 480px;
+  max-width: 92%;
+  border-radius:14px;
+  padding:1.4rem 1.4rem 1.2rem;
+  box-shadow:0 6px 28px -6px rgba(0,0,0,.25);
+  animation: fadeIn .25s ease;
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+}
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(12px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.nbList {
+  max-height:210px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:.55rem;
+  padding-right:4px;
+}
+
+.nbEmpty {
+  font-size:.85rem;
+  color:#666;
+  text-align:center;
+  padding:.75rem 0;
+  background:#fafafa;
+  border:1px dashed #ddd;
+  border-radius:8px;
+}
+
+.nbItem {
+  background:#fafafa;
+  border:1px solid #e3e3e3;
+  border-radius:10px;
+  padding:.7rem .9rem;
+  display:flex;
+  justify-content:space-between;
+  cursor:pointer;
+  font-size:.9rem;
+  transition:background .2s,border-color .2s;
+}
+
+.nbItem:hover {
+  background:#f2f2f2;
+}
+
+.nbItemActive {
+  background:#111;
+  color:#fff;
+  border-color:#111;
+}
+
+.nbName {
+  font-weight:600;
+}
+
+.nbMeta {
+  font-size:.75rem;
+  opacity:.75;
+}
+
+.nbCreateRow {
+  display:flex;
+  gap:.6rem;
+  align-items:center;
+}
+
+.nbInput {
+  flex:1;
+  border:1px solid #ccc;
+  border-radius:8px;
+  padding:.55rem .75rem;
+  font-size:.85rem;
+}
+
+.nbInput:focus {
+  outline:none;
+  border-color:#222;
+}
+
+.nbCreateBtn {
+  background:#111;
+  color:#fff;
+  border:none;
+  padding:.55rem 1rem;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:.85rem;
+}
+
+.nbCreateBtn:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.nbActions {
+  display:flex;
+  justify-content:flex-end;
+  gap:.75rem;
+  margin-top:.2rem;
+}
+
+.nbCancel, .nbSave {
+  padding:.6rem 1.15rem;
+  font-size:.85rem;
+  border-radius:8px;
+  cursor:pointer;
+  border:1px solid #ccc;
+  background:#fff;
+}
+
+.nbSave {
+  background:#1d1d1d;
+  color:#fff;
+  border-color:#1d1d1d;
+}
+
+.nbSave:disabled {
+  background:#888;
+  border-color:#888;
+  cursor:not-allowed;
+}
+
+@media (max-width:560px) {
+  .nbModal {
+    padding:1.1rem 1rem 1rem;
+  }
+}

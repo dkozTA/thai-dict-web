@@ -66,7 +66,7 @@ app.use('/api/dictionary', require('./routes/dictionary'));
 // Uncomment these as you implement them:
 // app.use('/api/auth', require('./routes/auth'));
 // app.use('/api/translation', require('./routes/translation'));
-// app.use('/api/user', require('./routes/user'));
+app.use('/api/user', require('./routes/user'));
 // app.use('/api/flashcard', require('./routes/flashcard'));
 
 // Error handling middleware

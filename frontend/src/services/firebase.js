@@ -13,9 +13,30 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
+// Debug: Check which config values are missing
+const missingKeys = Object.entries(firebaseConfig)
+  .filter(([key, value]) => !value && key !== 'measurementId')
+  .map(([key]) => key);
+
+if (missingKeys.length > 0) {
+  console.error('❌ Missing Firebase config values:', missingKeys);
+  console.error('Current config:', firebaseConfig);
+} else {
+  console.log('✅ Firebase config loaded successfully');
+}
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+let analytics;
+try {
+  if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+    analytics = getAnalytics(app);
+  }
+} catch (error) {
+  console.warn('Analytics initialization skipped:', error.message);
+}
+
 const firestore = getFirestore(app);
 const auth = getAuth(app);
 

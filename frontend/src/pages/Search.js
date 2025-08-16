@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import PageLayout from '../components/common/Pagelayout';
 import styles from '../styles/Search.module.css';
 import ThaiText from '../components/common/ThaiText';
+import NotebookPicker from '../components/common/NotebookPicker';
 import { searchThaiWords, getPopularWords } from '../services/dictionaryhandle';
 import { containsThaiCharacters, containsVietnameseCharacters } from '../utils/textUtils';
+import { addWordToNotebook, addSearchHistory, getUser, createNotebook } from '../services/userApi';
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,16 +16,40 @@ const Search = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [historyWords, setHistoryWords] = useState([]);
+  const [notebooks, setNotebooks] = useState({});
+  const [showNotebookPicker, setShowNotebookPicker] = useState(false);
+  const [selectedNotebookId, setSelectedNotebookId] = useState('');
+  const [newNotebookName, setNewNotebookName] = useState('');
+  const [savingNotebook, setSavingNotebook] = useState(false);
 
   // Load history on mount
   useEffect(() => {
-    try {
-      const h = JSON.parse(localStorage.getItem('searchHistory')) || [];
-      setHistoryWords(h);
-    } catch {
-      setHistoryWords([]);
+    const stored = localStorage.getItem('searchHistory');
+    if (stored) {
+      setHistoryWords(JSON.parse(stored));
     }
   }, []);
+
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+    (async () => {
+      const doc = await getUser(userId).catch(()=>null);
+      if (doc) {
+        if (doc.history?.search) {
+          // merge remote search history with local (remote first)
+          const merged = [...new Set([...(doc.history.search || []), ...historyWords])].slice(0,10);
+          setHistoryWords(merged);
+          localStorage.setItem('searchHistory', JSON.stringify(merged));
+        }
+        setNotebooks(doc.notebooks || {});
+        if (!localStorage.getItem('defaultNotebookId')) {
+          const first = Object.keys(doc.notebooks || {})[0];
+          if (first) localStorage.setItem('defaultNotebookId', first);
+        }
+      }
+    })();
+  }, [historyWords]);
 
   // Auto select first result
   useEffect(() => {
@@ -56,11 +82,23 @@ const Search = () => {
       if (selectedCategory === 'Từ vựng') {
         if (containsVietnameseCharacters(searchTerm)) searchType = 'meaning';
         else if (containsThaiCharacters(searchTerm)) searchType = 'word';
-        else if (/^[a-zA-Z0-9\s\-\(\)]+$/.test(searchTerm)) searchType = 'phonetic';
+        else if (/^[a-zA-Z0-9\s\-(\(\))]+$/.test(searchTerm)) searchType = 'phonetic';
       }
       const data = await searchThaiWords(searchTerm, searchType);
       setResults(data);
-      if (data.length > 0) saveToHistory(searchTerm);
+      if (data.length > 0) {
+        const wasNew = !historyWords.includes(searchTerm);
+        saveToHistory(searchTerm);
+        const userId = localStorage.getItem('userId');
+        if (userId && wasNew) {
+          try {
+            await addSearchHistory(userId, searchTerm);
+            console.log('Search history saved to backend');
+          } catch (error) {
+            console.error('Failed to save search history:', error);
+          }
+        }
+      }
       if (data.length === 0) setError('Không tìm thấy kết quả');
     } catch (err) {
       console.error(err);
@@ -69,6 +107,47 @@ const Search = () => {
       setLoading(false);
     }
   };
+
+  const handleAddCurrentWord = () => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      setError('Đăng nhập để lưu từ');
+      return;
+    }
+    setShowNotebookPicker(true);
+  };
+
+  const actuallyAddWord = async (nbId) => {
+  const userId = localStorage.getItem('userId');
+  if (!userId || !selectedWord) return;
+  await addWordToNotebook(userId, nbId, {
+    wordId: selectedWord.id || selectedWord.word,
+    word: selectedWord.word,
+    vietnamese_meaning: selectedWord.vietnamese_meaning,
+    phonetic: selectedWord.word_transliterated || '',
+    note: '',
+    examples: selectedWord.examples || []
+  }).catch(()=>{});
+  setShowNotebookPicker(false);
+};
+
+const handleCreateNotebook = async () => {
+  if (!newNotebookName.trim()) return;
+  setSavingNotebook(true);
+  try {
+    const userId = localStorage.getItem('userId');
+    const nb = await createNotebook(userId, newNotebookName.trim());
+    if (nb?.id) {
+      const updated = { ...notebooks, [nb.id]: nb };
+      setNotebooks(updated);
+      setSelectedNotebookId(nb.id);
+      localStorage.setItem('defaultNotebookId', nb.id);
+      setNewNotebookName('');
+    }
+  } finally {
+    setSavingNotebook(false);
+  }
+};
 
   const extractHeadlineMeaning = (text) => {
     if (!text) return '';
@@ -143,21 +222,24 @@ const Search = () => {
               </div>
 
               <div className={styles.panel}>
-                <div className={styles.panelTitleSmall}>Các từ liên quan:</div>
+                <div className={styles.panelTitleSmall}>Lịch sử tìm kiếm:</div>
                 <div className={styles.relatedList}>
-                  {relatedWords.map(r => (
+                  {historyWords.map((term, index) => (
                     <div
-                      key={r.id}
+                      key={index}
                       className={styles.relatedItem}
-                      onClick={()=>setSelectedWord(r)}
+                      onClick={() => {
+                        setSearchTerm(term);
+                        handleSearch();
+                      }}
                     >
-                      <div className={styles.relatedWord}>{r.word_transliterated || r.word}</div>
+                      <div className={styles.relatedWord}>{term}</div>
                       <div className={styles.relatedMeaning}>
-                        {extractHeadlineMeaning(r.vietnamese_meaning)}
+                        Nhấn để tìm lại
                       </div>
                     </div>
                   ))}
-                  {relatedWords.length === 0 && <div className={styles.emptyStateMini}>Không có</div>}
+                  {historyWords.length === 0 && <div className={styles.emptyStateMini}>Chưa có lịch sử</div>}
                 </div>
               </div>
             </div>
@@ -168,12 +250,20 @@ const Search = () => {
               <>
                 <div className={styles.wordHeaderLine}>
                   <div className={styles.wordTitle}>
-                    {(selectedWord.word_transliterated || selectedWord.word || '').toUpperCase()}
+                    {(() => {
+                      const thaiWord = selectedWord.word && containsThaiCharacters(selectedWord.word)
+                        ? selectedWord.word
+                        : (selectedWord.displayWord && containsThaiCharacters(selectedWord.displayWord)
+                            ? selectedWord.displayWord
+                            : null);
+                      return (thaiWord || selectedWord.word || selectedWord.word_transliterated || '').toUpperCase();
+                    })()}
                   </div>
                   {/* Placeholder for add button */}
-                  <button className={styles.addBtn} type="button" title="Thêm">
-                    +
-                  </button>
+                    <button className={styles.addBtn} type="button" title="Lưu"
+                      onClick={handleAddCurrentWord}>
+                      +
+                    </button>
                 </div>
 
                 <div className={styles.sectionRow}>
@@ -187,23 +277,47 @@ const Search = () => {
                   {extractHeadlineMeaning(selectedWord.vietnamese_meaning) || 'Là danh từ or ...'}
                 </div>
 
-                <div className={styles.sectionBlock}>
+                {/* <div className={styles.sectionBlock}>
                   <div className={styles.blockTitle}>Nghĩa...</div>
                   <div
                     className={styles.blockContent}
                     dangerouslySetInnerHTML={{__html: highlightTerm(selectedWord.vietnamese_meaning)}}
                   />
-                </div>
+                </div> */}
 
                 <div className={styles.sectionBlock}>
                   <div className={styles.blockTitle}>Ví dụ:</div>
                   <div className={styles.examplesBlock}>
-                    {(selectedWord.examples || []).slice(0,5).map((ex,i)=>(
-                      <div key={i} className={styles.exampleLine}>
-                        <span className={styles.exampleIndex}>VD{i+1}</span>
-                        <ThaiText text={ex} size="small" />
-                      </div>
-                    ))}
+                    {(selectedWord.examples || []).slice(0,5).map((ex,i)=>{
+                      // Split example into Thai part and Vietnamese meaning part
+                      const parts = ex.split(':');
+                      const thaiPart = parts[0]?.trim() || '';
+                      const vietnamesePart = parts[1]?.trim() || '';
+                      
+                      return (
+                        <div key={i} className={styles.exampleLine}>
+                          <span className={styles.exampleIndex}>VD{i+1}</span>
+                          <div className={styles.exampleContent}>
+                            {thaiPart && (
+                              <div className={styles.exampleThai}>
+                                <ThaiText text={thaiPart} size="small" />
+                              </div>
+                            )}
+                            {vietnamesePart && (
+                              <div className={styles.exampleMeaning}>
+                                {vietnamesePart}
+                              </div>
+                            )}
+                            {/* If no colon separator, show entire text as Thai */}
+                            {!vietnamesePart && parts.length === 1 && (
+                              <div className={styles.exampleThai}>
+                                <ThaiText text={ex} size="small" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                     {(selectedWord.examples || []).length === 0 && (
                       <div className={styles.emptyStateMini}>Chưa có ví dụ....</div>
                     )}
@@ -219,6 +333,20 @@ const Search = () => {
           </div>
         </div>
       </div>
+
+
+      <NotebookPicker
+        show={showNotebookPicker}
+        onClose={() => setShowNotebookPicker(false)}
+        notebooks={notebooks}
+        selectedNotebookId={selectedNotebookId}
+        setSelectedNotebookId={setSelectedNotebookId}
+        newNotebookName={newNotebookName}
+        setNewNotebookName={setNewNotebookName}
+        savingNotebook={savingNotebook}
+        onCreateNotebook={handleCreateNotebook}
+        onSaveWord={actuallyAddWord}
+      />
     </PageLayout>
   );
 };

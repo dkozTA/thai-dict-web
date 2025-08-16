@@ -1,31 +1,31 @@
 import axios from 'axios';
-import { containsThaiCharacters, formatThaiText } from '../utils/textUtils';
+import { containsThaiCharacters, formatThaiText, containsVietnameseCharacters } from '../utils/textUtils';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Configure axios to handle UTF-8 properly
-axios.defaults.headers.common['Accept-Charset'] = 'UTF-8';
-axios.defaults.headers.common['Content-Type'] = 'application/json; charset=utf-8';
+// axios.defaults.headers.common['Accept-Charset'] = 'UTF-8';
+// axios.defaults.headers.common['Content-Type'] = 'application/json; charset=utf-8';
 
 // Search for Thai words using our API
-export const searchThaiWords = async (searchTerm, searchType = 'all') => {
-  try {
-    if (!searchTerm.trim()) return [];
+  export const searchThaiWords = async (searchTerm, searchType = 'all') => {
+    try {
+      if (!searchTerm.trim()) return [];
 
-    console.log('Searching for:', searchTerm, 'with type:', searchType);
+      console.log('Searching for:', searchTerm, 'with type:', searchType);
 
-    // Don't encode Vietnamese characters - let axios handle it properly
-    const response = await axios.get(`${API_URL}/dictionary/search`, {
-      params: {
-        query: searchTerm.trim(), // Don't encode here
-        limit: 20,
-        searchType: searchType
-      },
-      headers: {
-        'Accept-Charset': 'UTF-8',
-        'Content-Type': 'application/json; charset=utf-8'
-      }
-    });
+      // Don't encode Vietnamese characters - let axios handle it properly
+      const response = await axios.get(`${API_URL}/dictionary/search`, {
+        params: {
+          query: searchTerm.trim(), // Don't encode here
+          limit: 20,
+          searchType: searchType
+        },
+        // headers: {
+        //   'Accept-Charset': 'UTF-8',
+        //   'Content-Type': 'application/json; charset=utf-8'
+        // }
+      });
 
     if (response.data.success) {
       console.log('Search results:', response.data.data);
@@ -33,10 +33,10 @@ export const searchThaiWords = async (searchTerm, searchType = 'all') => {
       // Process results for display
       const results = response.data.data.map(word => ({
         ...word,
-        // Ensure Thai text displays correctly
         word: word.word ? decodeThaiText(word.word) : word.word,
         phonetic: word.phonetic ? decodeThaiText(word.phonetic) : word.phonetic,
-        examples: word.examples ? word.examples.map(ex => decodeThaiText(ex)) : []
+        // DO NOT transliterate examples – keep original so we can split later
+        examples: Array.isArray(word.examples) ? word.examples : []
       }));
       return results;
     } else {
@@ -51,14 +51,10 @@ export const searchThaiWords = async (searchTerm, searchType = 'all') => {
 // Helper function to decode Thai text
 const decodeThaiText = (text) => {
   if (!text) return '';
-  
   try {
-    // If text is already in Thai script, return as is
-    if (containsThaiCharacters(text)) {
-      return text;
-    }
-    
-    // Otherwise, use the transliteration map to convert
+    if (containsThaiCharacters(text)) return text;
+    // if it already has Vietnamese diacritics, keep as Vietnamese
+    if (containsVietnameseCharacters && containsVietnameseCharacters(text)) return text;
     return formatThaiText(text);
   } catch (e) {
     console.error('Error decoding Thai text:', e);

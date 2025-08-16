@@ -6,7 +6,7 @@ const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || 'tiengthai-c00d1'
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID
 });
 
 const db = admin.firestore();
