@@ -8,121 +8,131 @@
 /* Profile Container */
 .profileContainer {
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  border: 1px solid #e5e5e5;
+  border-radius: 16px; /* Slightly more rounded */
+  padding: 2.5rem; /* More breathing room */
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08); /* Softer shadow */
+  border: 1px solid #eaeaea; /* Lighter border */
 }
 
 .profileHeader {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem; /* More spacing */
+  display: flex; /* Make header layout horizontal */
+  align-items: center;
+  flex-direction: column;
 }
 
 .avatar {
-  width: 80px;
-  height: 80px;
+  width: 90px; /* Slightly larger */
+  height: 90px; /* Slightly larger */
   border-radius: 50%;
-  background: #1a1a1a;
+  background: #2c5aa0; /* Match your app's primary color from header */
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  margin: 0 auto 1rem;
+  font-size: 2.2rem;
+  margin: 0 auto 1.2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Add subtle shadow */
+}
+
+.headerText {
+  text-align: center;
 }
 
 .profileHeader h2 {
   margin: 0 0 0.5rem 0;
   color: #1a1a1a;
+  font-size: 1.8rem; /* Larger name */
 }
 
-.profileHeader p {
+.emailText {
   margin: 0;
   color: #666;
+  font-size: 0.95rem;
 }
 
 /* Profile Stats */
 .profileStats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr); /* Always 3 columns for consistency */
+  gap: 1.2rem;
   margin: 2rem 0;
 }
 
 .statCard {
   background: #f9f9f9;
-  padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #e5e5e5;
+  padding: 1.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #eaeaea;
+  transition: transform 0.2s, box-shadow 0.2s; /* Add hover effect */
+}
+
+.statCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
 .statCard h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.9rem;
-  color: #666;
+  margin: 0 0 0.8rem 0;
+  font-size: 1rem;
+  color: #555;
 }
 
 .statNumber {
   font-size: 2rem;
   font-weight: bold;
-  color: #1a1a1a;
+  color: #2c5aa0; /* Match app's primary color */
 }
 
 /* Profile Actions */
-.profileActions {
+.actionsRow {
   display: flex;
   gap: 1rem;
   justify-content: center;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
 }
 
-.editButton,
 .logoutButton {
-  padding: 10px 20px;
+  padding: 0.8rem 2rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px; /* More rounded */
   cursor: pointer;
   font-weight: 600;
-  transition: background-color 0.3s;
-}
-
-.editButton {
-  background: #1a1a1a;
-  color: white;
-}
-
-.editButton:hover {
-  background: #333;
-}
-
-.logoutButton {
-  background: #dc3545;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  background: #f44336; /* Slightly modified red */
   color: white;
 }
 
 .logoutButton:hover {
-  background: #c82333;
+  background: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.logoutButton:active {
+  transform: translateY(0);
 }
 
 /* Auth Container */
 .authContainer {
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   text-align: left;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #eaeaea;
 }
 
 .authTabs {
   display: flex;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid #eaeaea;
 }
 
 .authTab {
   flex: 1;
-  padding: 1rem;
+  padding: 1rem 0.5rem;
   background: none;
   border: none;
   cursor: pointer;
@@ -137,10 +147,11 @@
 }
 
 .activeTab {
-  color: #1a1a1a !important;
-  border-bottom: 2px solid #1a1a1a;
+  color: #2c5aa0 !important; /* Match app's primary color */
+  border-bottom: 2px solid #2c5aa0; /* Match app's primary color */
 }
 
+/* Keep rest of the auth form mostly unchanged */
 .authForm {
   max-width: 400px;
   margin: 0 auto;
@@ -161,94 +172,82 @@
   width: 100%;
   padding: 12px 16px;
   border: 2px solid #e5e5e5;
-  border-radius: 8px;
+  border-radius: 10px; /* More rounded */
   font-size: 16px;
-  transition: border-color 0.3s;
+  transition: all 0.2s;
   background: white;
   color: #1a1a1a;
 }
 
 .input:focus {
   outline: none;
-  border-color: #1a1a1a;
-  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+  border-color: #2c5aa0; /* Match app's primary color */
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1); /* Match app's primary color */
 }
 
 .submitButton {
   width: 100%;
   padding: 15px;
-  background: #1a1a1a;
+  background: #2c5aa0; /* Match app's primary color */
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px; /* More rounded */
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.2s;
 }
 
 .submitButton:hover {
-  background: #333;
+  background: #1e3d6f; /* Darker version */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .authFooter {
   text-align: center;
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid #eaeaea;
 }
 
 .linkButton {
   background: none;
   border: none;
-  color: #1a1a1a;
+  color: #2c5aa0; /* Match app's primary color */
   cursor: pointer;
   text-decoration: underline;
   font-size: inherit;
 }
 
 .linkButton:hover {
-  color: #333;
+  color: #1e3d6f; /* Darker version */
 }
 
-.profileExtra {
-  margin-top: 2rem;;
-}
-
-.profileExtra h3 { 
-  margin:1.2rem 0 .5rem; font-size:1rem; 
-}
-
-.simpleList { 
-  list-style:disc; 
-  padding-left:1.2rem; 
-  margin:0; 
-}
-.simpleList li { 
-  font-size:.9rem; 
-  line-height:1.4; 
-  margin-bottom:.25rem; 
-}
 .errorMessage { 
-  color:#c62828; 
-  background:#ffecec; 
-  padding:.6rem .9rem; 
-  border-radius:8px; 
-  font-size:.85rem; 
-  margin-bottom:1rem; 
+  color: #c62828; 
+  background: #ffecec; 
+  padding: 0.8rem 1rem;
+  border-radius: 10px; /* More rounded */
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(198, 40, 40, 0.2); /* Add subtle border */
 }
 
-/* Responsive */
+/* Keep responsive rules as is */
 @media (max-width: 768px) {
   .profileContent {
     padding: 1rem;
   }
   
-  .profileActions {
-    flex-direction: column;
-  }
-  
   .profileStats {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileContainer,
+  .authContainer {
+    padding: 1.5rem;
   }
 }

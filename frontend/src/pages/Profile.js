@@ -108,53 +108,62 @@ useEffect(() => {
   const notebookCount = Object.keys(userData?.notebooks || {}).length;
   const historyCount = searchHistoryArr.length;
 
-  if (authUser) {
+if (authUser) {
     return (
       <PageLayout title="Tài khoản cá nhân" showUserInfo={false}>
         <div className={styles.profileContent}>
           <div className={styles.profileContainer}>
             <div className={styles.profileHeader}>
               <div className={styles.avatar}><span>👤</span></div>
-              <h2>Chào mừng, {authUser.displayName || authUser.email}</h2>
-              <p>{authUser.email}</p>
-            </div>
-
-            <div className={styles.profileStats}>
-              <div className={styles.statCard}>
-                <h3>📚 Từ đã lưu</h3>
-                <span className={styles.statNumber}>{wordCount}</span>
-              </div>
-              <div className={styles.statCard}>
-                <h3>📖 Sổ tay</h3>
-                <span className={styles.statNumber}>{notebookCount}</span>
-              </div>
-              <div className={styles.statCard}>
-                <h3>🔍 Lịch sử</h3>
-                <span className={styles.statNumber}>{historyCount}</span>
+              <div className={styles.headerText}>
+                <h2>{authUser.displayName || 'Người dùng'}</h2>
+                <p className={styles.emailText}>{authUser.email}</p>
               </div>
             </div>
 
-            <div className={styles.profileActions}>
-              <button className={styles.logoutButton} onClick={handleLogout} disabled={loading}>Đăng xuất</button>
-            </div>
+            <div className={styles.infoGrid}>
+              <div className={styles.panelCard}>
+                <h3 className={styles.panelTitle}>Tổng quan</h3>
+                <div className={styles.profileStats}>
+                  <div className={styles.statCard}>
+                    <h3>📚 Từ đã lưu</h3>
+                    <span className={styles.statNumber}>
+                      {Object.values(userData?.notebooks || {})
+                        .reduce((sum, nb) => sum + Object.keys(nb.words || {}).length, 0)}
+                    </span>
+                  </div>
+                  <div className={styles.statCard}>
+                    <h3>📖 Sổ tay</h3>
+                    <span className={styles.statNumber}>
+                      {Object.keys(userData?.notebooks || {}).length}
+                    </span>
+                  </div>
+                  <div className={styles.statCard}>
+                    <h3>🔍 Lịch sử</h3>
+                    <span className={styles.statNumber}>
+                      {(userData?.history?.searches || userData?.history?.search || []).length}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-            <div className={styles.profileExtra}>
-              <h3>Lịch sử gần đây</h3>
-              <ul className={styles.simpleList}>
-                {searchHistoryArr.slice(0,10).map(t=> <li key={t}>{t}</li>)}
-                {!searchHistoryArr.length && <li>(trống)</li>}
-              </ul>
-
-              {/* <h3>Từ trong sổ tay đầu tiên</h3>
-              {notebookCount ? (
+              {/* <div className={styles.panelCard}>
+                <h3 className={styles.panelTitle}>Lịch sử gần đây</h3>
                 <ul className={styles.simpleList}>
-                  {Object
-                    .values(Object.values(userData.notebooks)[0].words || {})
-                    .slice(0,10)
-                    .map(w => <li key={w.id}>{w.word} – {w.vietnamese_meaning?.slice(0,40)}</li>)}
-                  {!Object.values(Object.values(userData.notebooks)[0].words || {}).length && <li>(chưa có từ)</li>}
+                  {(userData?.history?.searches || userData?.history?.search || [])
+                    .slice(0, 10)
+                    .map((t) => <li key={t}>{t}</li>)}
+                  {!((userData?.history?.searches || userData?.history?.search || []).length) && (
+                    <li>(trống)</li>
+                  )}
                 </ul>
-              ) : <p>(Chưa có sổ tay)</p>} */}
+              </div> */}
+            </div>
+
+            <div className={styles.actionsRow}>
+              <button className={styles.logoutButton} onClick={logoutUser} disabled={loading}>
+                Đăng xuất
+              </button>
             </div>
           </div>
         </div>
@@ -162,6 +171,7 @@ useEffect(() => {
     );
   }
 
+  // AUTH (login/register)
   return (
     <PageLayout title={isLogin ? 'Đăng nhập' : 'Đăng ký'} showUserInfo={false}>
       <div className={styles.profileContent}>
@@ -169,25 +179,31 @@ useEffect(() => {
           <div className={styles.authTabs}>
             <button
               className={`${styles.authTab} ${isLogin ? styles.activeTab : ''}`}
-              onClick={() => setIsLogin(true)}
+              onClick={() => { if (!loading) { setIsLogin(true); setError(''); }}}
               type="button"
               disabled={loading}
-            >Đăng nhập</button>
+            >
+              Đăng nhập
+            </button>
             <button
               className={`${styles.authTab} ${!isLogin ? styles.activeTab : ''}`}
-              onClick={() => setIsLogin(false)}
+              onClick={() => { if (!loading) { setIsLogin(false); setError(''); }}}
               type="button"
               disabled={loading}
-            >Đăng ký</button>
+            >
+              Đăng ký
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className={styles.authForm}>
             {!isLogin && (
               <div className={styles.inputGroup}>
-                <label>Tên hiển thị:</label>
+                <label>Tên hiển thị</label>
                 <input
                   type="text"
                   name="displayName"
+                  placeholder="Ví dụ: Nguyễn Văn A"
+                  autoComplete="name"
                   value={formData.displayName}
                   onChange={handleInputChange}
                   required
@@ -198,10 +214,12 @@ useEffect(() => {
             )}
 
             <div className={styles.inputGroup}>
-              <label>Email:</label>
+              <label>Email</label>
               <input
                 type="email"
                 name="email"
+                placeholder="you@example.com"
+                autoComplete="email"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
@@ -211,10 +229,12 @@ useEffect(() => {
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Mật khẩu:</label>
+              <label>Mật khẩu</label>
               <input
                 type="password"
                 name="password"
+                placeholder="Tối thiểu 6 ký tự"
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
                 value={formData.password}
                 onChange={handleInputChange}
                 required
@@ -225,10 +245,12 @@ useEffect(() => {
 
             {!isLogin && (
               <div className={styles.inputGroup}>
-                <label>Xác nhận mật khẩu:</label>
+                <label>Xác nhận mật khẩu</label>
                 <input
                   type="password"
                   name="confirmPassword"
+                  placeholder="Nhập lại mật khẩu"
+                  autoComplete="new-password"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
@@ -247,7 +269,7 @@ useEffect(() => {
 
           <div className={styles.authFooter}>
             <p>
-              {isLogin ? "Chưa có tài khoản? " : "Đã có tài khoản? "}
+              {isLogin ? 'Chưa có tài khoản? ' : 'Đã có tài khoản? '}
               <button
                 type="button"
                 className={styles.linkButton}
