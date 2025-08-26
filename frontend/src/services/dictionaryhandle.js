@@ -51,15 +51,11 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 // Helper function to decode Thai text
 const decodeThaiText = (text) => {
   if (!text) return '';
-  try {
-    if (containsThaiCharacters(text)) return text;
-    // if it already has Vietnamese diacritics, keep as Vietnamese
-    if (containsVietnameseCharacters && containsVietnameseCharacters(text)) return text;
-    return formatThaiText(text);
-  } catch (e) {
-    console.error('Error decoding Thai text:', e);
-    return text;
-  }
+  
+  // If text already contains Thai characters, just return it
+  if (containsThaiCharacters(text)) return text;
+  
+  return text;
 };
 
 // Get a single word by ID

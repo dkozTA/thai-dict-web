@@ -289,7 +289,7 @@ const Learning = () => {
             {pagedWords.map(w => (
               <div key={w.id} className={styles.wordCard}>
                 <div className={styles.wordLineTop}>
-                  <span className={styles.wordMain}>{w.word}</span>
+                  <span className={`${styles.wordMain} word-thai`} lang="th">{w.word}</span>
                   {w.phonetic && <span className={styles.wordPhonetic}>({w.phonetic})</span>}
                 </div>
                 <div className={styles.wordMeaning}>{w.vietnamese_meaning}</div>

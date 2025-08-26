@@ -1,5 +1,6 @@
 import React from 'react';
-import { containsThaiCharacters, formatThaiText } from '../../utils/textUtils';
+import { containsThaiCharacters } from '../../utils/textUtils';
+import styles from '../../styles/ThaiText.module.css';
 
 const ThaiText = ({ 
   text, 
@@ -10,26 +11,25 @@ const ThaiText = ({
 }) => {
   if (!text) return null;
   
-  // Process the text
+  // We no longer need to transform the text, just check if it's already Thai
   const isThaiAlready = containsThaiCharacters(text);
-  const formattedText = isThaiAlready ? text : formatThaiText(text);
   
   const sizeClass = {
-    small: 'thai-text-sm',
-    medium: 'thai-text-md',
-    large: 'thai-text-lg'
-  }[size] || 'thai-text-md';
+    small: styles['thai-text-sm'],
+    medium: styles['thai-text-md'],
+    large: styles['thai-text-lg']
+  }[size] || styles['thai-text-md'];
 
   return (
-    <span className={`thai-text ${sizeClass}`}>
-      <span lang="th">{formattedText}</span>
+    <span className={`${styles['thai-text']} ${sizeClass}`}>
+      <span lang="th">{text}</span>
       
       {showOriginal && !isThaiAlready && (
-        <span className="thai-original">({text})</span>
+        <span className={styles['thai-original']}>({text})</span>
       )}
       
       {showPhonetic && phonetic && (
-        <span className="thai-phonetic">/{phonetic}/</span>
+        <span className={styles['thai-phonetic']}>/{phonetic}/</span>
       )}
     </span>
   );

@@ -16,7 +16,7 @@ class ExcelImporter {
     this.processedCount = 0;
     this.errorCount = 0;
     this.errors = [];
-    this.MAX_IMPORT_LIMIT = 1000; // Import limit
+    this.MAX_IMPORT_LIMIT = 100; // Import limit
   }
 
   // Add your existing methods here...
@@ -49,86 +49,81 @@ class ExcelImporter {
     return decodedText.trim().replace(/\s+/g, ' ');
   }
   
-  // Add other methods like parseColumnC, extractMainMeaning, etc.
+  // Parse Column C into structured data
   parseColumnC(text) {
     const result = {
       phonetic: '',
       grammar_note: '',
       mainMeaning: '',
-      examples: []  // array of { phrase, meaning }
+      examples: []  // Will be array of { thai: '', meaning: '' } pairs
     };
+
     if (!text) return result;
 
-    let work = text.trim().replace(/\s+/g, ' ');
-
-    // 1. Extract leading phonetic (uppercase Vietnamese letters & spaces)
-    const UPPER_VIET = 'A-ZĐÁÀẢÃẠÂẦẤẨẪẬĂẮẰẲẴẶÉÈẺẼẸÊỀẾỂỄỆÍÌỈĨỊÓÒỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÚÙỦŨỤƯỪỨỬỮỰÝỲỶỸỴ';
-    const phoneticRe = new RegExp(`^([${UPPER_VIET}][${UPPER_VIET}\\s]*)`);
-    const phoneticMatch = work.match(phoneticRe);
+    // Step 1: Extract phonetic part (usually all caps at beginning)
+    const phoneticMatch = text.match(/^([A-ZÀÁẠẢÃÂẤẦẬẨẪĂẮẰẶẲẴÈÉẸẺẼÊẾỀỆỂỄÍÌỊỈĨÓÒỌỎÕÔỐỒỘỔỖƠỚỜỢỞỠÚÙỤỦŨƯỨỪỰỬỮÝỲỴỶỸĐ\s]+)/);
     if (phoneticMatch) {
-      result.phonetic = phoneticMatch[1].trim().replace(/\s+/g, ' ');
-      work = work.slice(phoneticMatch[0].length).trim();
+      result.phonetic = phoneticMatch[1].trim();
+      text = text.substring(phoneticMatch[0].length).trim();
     }
-
-    // 2. Extract optional grammar note in parentheses immediately after
-    const grammarMatch = work.match(/^\(([^\)]+)\)\s*/);
+    
+    // Step 2: Extract grammar note if present (vh)
+    const grammarMatch = text.match(/^\(([^\)]+)\)/);
     if (grammarMatch) {
       result.grammar_note = grammarMatch[1].trim();
-      work = work.slice(grammarMatch[0].length).trim();
+      text = text.substring(grammarMatch[0].length).trim();
     }
-
-    // 3. Find example pairs of form "<phrase>: <meaning>"
-    // Accept both uppercase/lowercase phrase parts (transliteration / mixed) before colon
-    // We capture Vietnamese meaning up to a period OR end OR next numbered sense.
-    const examplePairs = [];
-    const exampleRe = /([^:.]+?):\s*([^.:]+(?:\.[^0-9]|$|))/g;
-    let exMatch;
-    // To avoid removing parts inside enumerated definitions (1. 2. etc.), collect indices.
-    while ((exMatch = exampleRe.exec(work)) !== null) {
-      const phrase = exMatch[1].trim();
-      const meaning = exMatch[2].trim().replace(/[.;]+$/,'');
-      if (phrase && meaning && meaning.length > 1) {
-        examplePairs.push({ phrase, meaning, start: exMatch.index, end: exampleRe.lastIndex });
+    
+    // Step 3: Split numbered definitions (1. ... 2. ...)
+    const definitions = [];
+    const definitionMatches = text.split(/(\d+\.\s*)/).filter(Boolean);
+    
+    if (definitionMatches.length > 1) {
+      // Group definition number with content
+      for (let i = 0; i < definitionMatches.length; i += 2) {
+        const number = definitionMatches[i].trim();
+        const content = (i + 1 < definitionMatches.length) ? definitionMatches[i + 1].trim() : '';
+        if (content) {
+          definitions.push({ number, content });
+        }
       }
-    }
-
-    // 4. Remove example substrings (from end to start to preserve indices)
-    if (examplePairs.length) {
-      let mutable = work;
-      examplePairs.sort((a,b)=>b.start-a.start).forEach(p=>{
-        mutable = mutable.slice(0,p.start).trim() + ' ' + mutable.slice(p.end).trim();
-      });
-      work = mutable.replace(/\s+/g,' ').trim();
-    }
-
-    // 5. Enumerated senses: split by patterns "1." "2." etc.
-    // Keep them joined as mainMeaning; we do not split into separate records here.
-    // If no enumeration, main meaning is remaining text up to first extra trailing period.
-    if (/^\d+\./.test(work)) {
-      // Reconstruct enumerated senses cleanly
-      const senses = work.split(/(?=\d+\.)/).map(s=>s.trim()).filter(Boolean);
-      result.mainMeaning = senses.join(' ');
     } else {
-      // If first token after phonetic looks like a single Vietnamese word (likely direct gloss),
-      // capture it when examples existed (case like "BÁ vai Bá dăn tin pau: ...")
-      if (examplePairs.length && work) {
-        const firstWord = work.split(/\s+/)[0];
-        // If remaining minus first word is very short, just take firstWord.
-        result.mainMeaning = firstWord.replace(/[.,;]+$/,'');
-        // Remove that word from remaining tail (not used further now)
-      } else {
-        result.mainMeaning = work.replace(/[.;\s]+$/,'');
-      }
+      // No numbered definitions, just take the whole text
+      definitions.push({ number: '', content: text });
     }
-
-    // 6. Attach example pairs
-    result.examples = examplePairs.map(p => ({
-      phrase_transliterated: p.phrase,
-      example_meaning: p.meaning
-    }));
-
-    // Final cleanups
-    if (!result.mainMeaning) result.mainMeaning = result.phonetic ? '' : 'Chưa có nghĩa';
+    
+    // Step 4: Process each definition to extract examples and main meaning
+    definitions.forEach(def => {
+      // Split by colon to separate examples
+      const parts = def.content.split(':').map(p => p.trim());
+      
+      if (parts.length > 1) {
+        // First part is main meaning or example Thai word
+        const firstPart = parts[0].trim();
+        
+        // Rest could contain both example meaning and additional meanings
+        const restParts = parts.slice(1).join(':').split('-').map(p => p.trim());
+        
+        if (restParts.length > 0) {
+          // First of the rest is the example meaning
+          result.examples.push({
+            thai: firstPart,
+            meaning: restParts[0]
+          });
+          
+          // Any additional parts are part of the main meaning
+          if (restParts.length > 1) {
+            result.mainMeaning += (result.mainMeaning ? ' ' : '') + 
+              def.number + ' ' + restParts.slice(1).join(' - ');
+          } else if (!result.mainMeaning) {
+            result.mainMeaning = def.number + ' ' + firstPart;
+          }
+        }
+      } else if (parts.length === 1 && !result.mainMeaning) {
+        // Only one part, use as main meaning
+        result.mainMeaning = def.number + ' ' + parts[0];
+      }
+    });
 
     return result;
   }
@@ -142,25 +137,46 @@ class ExcelImporter {
       if (!thaiWord || !columnC) return null;
 
       const parsed = this.parseColumnC(columnC);
-
-      // Merge examples: Thai examples from column B + parsed example pairs
+      
+      // Extract examples from column B and match with meanings
       const mergedExamples = [];
-
+      
+      // Process column B examples (Thai text)
+      const thaiExamples = [];
       if (thaiExamplesRaw) {
-        // Split numbered examples in Column B (e.g., "1. ... 2. ...")
-        const splitThai = thaiExamplesRaw.split(/\d+\.\s*/).map(s=>s.trim()).filter(s=>s);
-        if (splitThai.length) mergedExamples.push(...splitThai);
-        else mergedExamples.push(thaiExamplesRaw);
+        // Split by numbered items (1. 2. etc)
+        const examples = thaiExamplesRaw.split(/(\d+\.\s*)/).filter(Boolean);
+        
+        // Group them properly
+        for (let i = 0; i < examples.length; i += 2) {
+          const number = examples[i].trim();
+          const content = (i + 1 < examples.length) ? examples[i + 1].trim() : '';
+          if (content) {
+            thaiExamples.push({ number, content });
+          }
+        }
+      }
+      
+      // Match Thai examples from column B with meanings from parsed column C
+      thaiExamples.forEach((ex, index) => {
+        mergedExamples.push({
+          thai: ex.content,
+          meaning: index < parsed.examples.length ? parsed.examples[index].meaning : ''
+        });
+      });
+      
+      // Add any remaining examples from column C
+      if (parsed.examples.length > thaiExamples.length) {
+        for (let i = thaiExamples.length; i < parsed.examples.length; i++) {
+          mergedExamples.push(parsed.examples[i]);
+        }
       }
 
-      parsed.examples.forEach(ex => {
-        mergedExamples.push(`${ex.phrase_transliterated}: ${ex.example_meaning}`);
-      });
-
+      // Create document object
       const document = {
         word: thaiWord,
-        word_transliterated: parsed.phonetic || thaiWord,
-        vietnamese_meaning: parsed.mainMeaning || columnC || 'Chưa có nghĩa',
+        word_transliterated: parsed.phonetic || '',
+        vietnamese_meaning: parsed.mainMeaning || 'Chưa có nghĩa',
         examples: mergedExamples,
         grammar_note: parsed.grammar_note || '',
         note: '',
@@ -169,8 +185,6 @@ class ExcelImporter {
         updated_at: new Date(),
         source: 'excel_import'
       };
-
-      if (!document.word) throw new Error('Missing required field: word');
 
       return document;
     } catch (error) {

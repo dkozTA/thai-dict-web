@@ -1,0 +1,15 @@
+@font-face {
+  font-family: 'Thai VietNam Chuan';
+  src: url('./fonts/ThaiVietNamchuan.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.word-thai {
+  font-family: 'Thai VietNam Chuan', sans-serif !important;
+}
+  
+[lang="th"] {
+  font-family: 'Thai VietNam Chuan', sans-serif !important;
+}

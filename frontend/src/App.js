@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import './fonts.css';
+import ThaiTestFont from './components/ThaiTestFont';
 
 // Import pages
 import Search from './pages/Search';

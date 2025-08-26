@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import PageLayout from '../components/common/Pagelayout';
 import styles from '../styles/Search.module.css';
+// import fontStyles from '../fonts.css';
 import ThaiText from '../components/common/ThaiText';
+import ThaiWord from '../components/common/ThaiWord';
 import NotebookPicker from '../components/common/NotebookPicker';
 import { searchThaiWords, getPopularWords } from '../services/dictionaryhandle';
 import { containsThaiCharacters, containsVietnameseCharacters } from '../utils/textUtils';
@@ -118,18 +120,36 @@ const Search = () => {
   };
 
   const actuallyAddWord = async (nbId) => {
-  const userId = localStorage.getItem('userId');
-  if (!userId || !selectedWord) return;
-  await addWordToNotebook(userId, nbId, {
-    wordId: selectedWord.id || selectedWord.word,
-    word: selectedWord.word,
-    vietnamese_meaning: selectedWord.vietnamese_meaning,
-    phonetic: selectedWord.word_transliterated || '',
-    note: '',
-    examples: selectedWord.examples || []
-  }).catch(()=>{});
-  setShowNotebookPicker(false);
-};
+    const userId = localStorage.getItem('userId');
+    if (!userId || !selectedWord) return;
+    
+    // Process examples to ensure they're in the new format
+    const processedExamples = (selectedWord.examples || []).map(ex => {
+      if (typeof ex === 'object' && ex !== null) {
+        // Already in the correct format
+        return ex;
+      } else {
+        // Convert string format to object format
+        const parts = ex.split(':');
+        const thaiPart = parts[0]?.trim() || '';
+        const vietnamesePart = parts[1]?.trim() || '';
+        return {
+          thai: thaiPart,
+          meaning: vietnamesePart
+        };
+      }
+    });
+    
+    await addWordToNotebook(userId, nbId, {
+      wordId: selectedWord.id || selectedWord.word,
+      word: selectedWord.word,
+      vietnamese_meaning: selectedWord.vietnamese_meaning,
+      phonetic: selectedWord.word_transliterated || '',
+      note: '',
+      examples: processedExamples
+      }).catch(()=>{});
+    setShowNotebookPicker(false);
+  };
 
 const handleCreateNotebook = async () => {
   if (!newNotebookName.trim()) return;
@@ -173,7 +193,6 @@ const handleCreateNotebook = async () => {
               value={searchTerm}
               onChange={(e)=>setSearchTerm(e.target.value)}
               disabled={loading}
-              lang="th"
             />
             <button type="submit" className={styles.newSearchButton} disabled={loading}>
               {loading ? 'Đang tìm...' : '🔍'}
@@ -250,14 +269,7 @@ const handleCreateNotebook = async () => {
               <>
                 <div className={styles.wordHeaderLine}>
                   <div className={styles.wordTitle}>
-                    {(() => {
-                      const thaiWord = selectedWord.word && containsThaiCharacters(selectedWord.word)
-                        ? selectedWord.word
-                        : (selectedWord.displayWord && containsThaiCharacters(selectedWord.displayWord)
-                            ? selectedWord.displayWord
-                            : null);
-                      return (thaiWord || selectedWord.word || selectedWord.word_transliterated || '').toUpperCase();
-                    })()}
+                    <ThaiWord text={selectedWord.word} />
                   </div>
                   {/* Placeholder for add button */}
                     <button className={styles.addBtn} type="button" title="Lưu"
@@ -289,10 +301,20 @@ const handleCreateNotebook = async () => {
                   <div className={styles.blockTitle}>Ví dụ:</div>
                   <div className={styles.examplesBlock}>
                     {(selectedWord.examples || []).slice(0,5).map((ex,i)=>{
-                      // Split example into Thai part and Vietnamese meaning part
-                      const parts = ex.split(':');
-                      const thaiPart = parts[0]?.trim() || '';
-                      const vietnamesePart = parts[1]?.trim() || '';
+                      // Handle both old format (string) and new format (object)
+                      let thaiPart = '';
+                      let vietnamesePart = '';
+                      
+                      if (typeof ex === 'object' && ex !== null) {
+                        // New format with separate thai and meaning fields
+                        thaiPart = ex.thai || '';
+                        vietnamesePart = ex.meaning || '';
+                      } else if (typeof ex === 'string') {
+                        // Old format with colon separator
+                        const parts = ex.split(':');
+                        thaiPart = parts[0]?.trim() || '';
+                        vietnamesePart = parts[1]?.trim() || '';
+                      }
                       
                       return (
                         <div key={i} className={styles.exampleLine}>
@@ -300,7 +322,7 @@ const handleCreateNotebook = async () => {
                           <div className={styles.exampleContent}>
                             {thaiPart && (
                               <div className={styles.exampleThai}>
-                                <ThaiText text={thaiPart} size="small" />
+                                <ThaiWord text={thaiPart} />
                               </div>
                             )}
                             {vietnamesePart && (
@@ -308,10 +330,10 @@ const handleCreateNotebook = async () => {
                                 {vietnamesePart}
                               </div>
                             )}
-                            {/* If no colon separator, show entire text as Thai */}
-                            {!vietnamesePart && parts.length === 1 && (
+                            {/* If no vietnamese part but we have a string, show as Thai */}
+                            {!vietnamesePart && typeof ex === 'string' && (
                               <div className={styles.exampleThai}>
-                                <ThaiText text={ex} size="small" />
+                                <ThaiWord text={ex} />
                               </div>
                             )}
                           </div>

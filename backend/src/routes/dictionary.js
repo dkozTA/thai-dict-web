@@ -201,8 +201,17 @@ router.get('/search', async (req, res) => {
       if (typeof examples === 'string') {
         examples = examples.split('\n').filter(ex => ex.trim());
       } else if (Array.isArray(examples)) {
-        examples = examples.filter(ex => ex && ex.trim());
-      }
+        examples = examples.filter(ex => {
+          if (typeof ex === 'string') {
+            return ex.trim();
+        } else if (ex && typeof ex === 'object') {
+          // Keep object examples that have either thai or meaning properties with content
+          return (ex.thai && typeof ex.thai === 'string' && ex.thai.trim()) || 
+                (ex.meaning && typeof ex.meaning === 'string' && ex.meaning.trim());
+        }
+        return false;
+      });
+    }
 
       return {
         id: result.id,

@@ -1,0 +1,13 @@
+/* Global Thai font styles */
+@font-face {
+  font-family: 'Thai VietNam Chuan';
+  src: url('../fonts/ThaiVietNamchuan.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Apply to all Thai language elements */
+[lang="th"] {
+  font-family: 'Thai VietNam Chuan', 'Sarabun', sans-serif !important;
+}

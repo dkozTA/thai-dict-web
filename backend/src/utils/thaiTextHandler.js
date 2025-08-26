@@ -57,44 +57,44 @@ const normalizeThaiText = (text) => {
  */
 const TRANSLITERATION_MAP = {
   // Vowels
-  'a': 'า',
-  'i': 'ิ',
-  'I': 'ี',
-  'u': 'ุ',
-  'U': 'ู',
-  'e': 'เ',
-  'E': 'แ',
-  'o': 'โ',
-  'O': 'อ',
+  // 'a': 'า',
+  // 'i': 'ิ',
+  // 'I': 'ี',
+  // 'u': 'ุ',
+  // 'U': 'ู',
+  // 'e': 'เ',
+  // 'E': 'แ',
+  // 'o': 'โ',
+  // 'O': 'อ',
   
-  // Consonants
-  'k': 'ก',
-  'c': 'จ',
-  't': 'ต',
-  'T': 'ท',
-  'p': 'ป',
-  'P': 'พ',
-  'b': 'บ',
-  'm': 'ม',
-  'n': 'น',
-  'N': 'ณ',
-  'j': 'จ',
-  'y': 'ย',
-  'r': 'ร',
-  'l': 'ล',
-  'w': 'ว',
-  's': 'ส',
-  'h': 'ห',
+  // // Consonants
+  // 'k': 'ก',
+  // 'c': 'จ',
+  // 't': 'ต',
+  // 'T': 'ท',
+  // 'p': 'ป',
+  // 'P': 'พ',
+  // 'b': 'บ',
+  // 'm': 'ม',
+  // 'n': 'น',
+  // 'N': 'ณ',
+  // 'j': 'จ',
+  // 'y': 'ย',
+  // 'r': 'ร',
+  // 'l': 'ล',
+  // 'w': 'ว',
+  // 's': 'ส',
+  // 'h': 'ห',
   
-  // Special characters
-  '&': '่', // tone mark
-  '*': '้', // tone mark
-  '^': '๊', // tone mark
-  '~': '๋', // tone mark
+  // // Special characters
+  // '&': '่', // tone mark
+  // '*': '้', // tone mark
+  // '^': '๊', // tone mark
+  // '~': '๋', // tone mark
   
-  // Other symbols
-  '#': 'ฃ',
-  '+': 'ฌ'
+  // // Other symbols
+  // '#': 'ฃ',
+  // '+': 'ฌ'
 };
 
 /**
@@ -113,28 +113,8 @@ const transliteratedToThai = (text) => {
     return text;
   }
   
-  let result = '';
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    
-    // Special handling for '<' and '>' which are used in transliteration system
-    if (char === '<') {
-      // Find matching '>' and process what's between them
-      const closeIndex = text.indexOf('>', i);
-      if (closeIndex > i) {
-        const specialSequence = text.substring(i + 1, closeIndex);
-        // Process special sequence - implement based on your transliteration system
-        result += specialSequence; // Simplified; you'll need to enhance this
-        i = closeIndex;
-        continue;
-      }
-    }
-    
-    // Use the mapping if available, otherwise keep the original character
-    result += TRANSLITERATION_MAP[char] || char;
-  }
-  
-  return result;
+  // We no longer use transliteration, just return the text
+  return text;
 };
 
 /**
