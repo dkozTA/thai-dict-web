@@ -1,17 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageLayout from '../components/common/Pagelayout';
 import NotebookPicker from '../components/common/NotebookPicker';
 import styles from '../styles/Learning.module.css';
-import { getUser, createNotebook, updateWordInNotebook } from '../services/userApi';
+import { getUser, createNotebook, updateWordInNotebook, updateNotebookName, deleteNotebook } from '../services/userApi';
 
 const PAGE_SIZE = 12;
 
 const Learning = () => {
+  const navigate = useNavigate();
   const [userNotebooks, setUserNotebooks] = useState({});
   const [selectedNotebookId, setSelectedNotebookId] = useState(null);
   const [activeMode, setActiveMode] = useState('flashcard');
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingNb, setLoadingNb] = useState(false);
+  const [showEditNotebookModal, setShowEditNotebookModal] = useState(false);
+  const [editNotebookData, setEditNotebookData] = useState({
+    id: '',
+    name: ''
+  });
+  const [updatingNotebook, setUpdatingNotebook] = useState(false);
   
   // Create notebook modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -109,6 +117,74 @@ const Learning = () => {
       }
     } finally {
       setCreatingNotebook(false);
+    }
+  };
+
+  const handleEditNotebook = () => {
+    setEditNotebookData({
+      id: selectedNotebookId,
+      name: currentNotebook?.name || ''
+    });
+    setShowEditNotebookModal(true);
+  };
+
+  const handleSaveNotebookEdit = async () => {
+    if (!editNotebookData.id || !editNotebookData.name.trim()) return;
+    
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
+    setUpdatingNotebook(true);
+    try {
+      // Update local state first for responsiveness
+      setUserNotebooks(prev => ({
+        ...prev,
+        [editNotebookData.id]: {
+          ...prev[editNotebookData.id],
+          name: editNotebookData.name,
+          updated_at: Date.now()
+        }
+      }));
+      
+      // We'll need to implement this function in userApi.js
+      await updateNotebookName(userId, editNotebookData.id, editNotebookData.name);
+      
+      setShowEditNotebookModal(false);
+    } catch (error) {
+      console.error('Failed to update notebook:', error);
+      alert('Lỗi khi cập nhật sổ tay. Vui lòng thử lại.');
+    } finally {
+      setUpdatingNotebook(false);
+    }
+  };
+
+  const handleDeleteNotebook = async () => {
+    if (!editNotebookData.id) return;
+    
+    if (!window.confirm('Bạn có chắc muốn xóa sổ tay này? Tất cả các từ trong sổ tay sẽ bị mất.')) {
+      return;
+    }
+    
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
+    setUpdatingNotebook(true);
+    try {
+      // We'll need to implement this function in userApi.js
+      await deleteNotebook(userId, editNotebookData.id);
+      
+      // Update local state
+      const newNotebooks = { ...userNotebooks };
+      delete newNotebooks[editNotebookData.id];
+      setUserNotebooks(newNotebooks);
+      
+      setShowEditNotebookModal(false);
+      setSelectedNotebookId(null); // Return to library view
+    } catch (error) {
+      console.error('Failed to delete notebook:', error);
+      alert('Lỗi khi xóa sổ tay. Vui lòng thử lại.');
+    } finally {
+      setUpdatingNotebook(false);
     }
   };
 
@@ -251,25 +327,33 @@ const Learning = () => {
           <div className={styles.detailLeft}>
             <button className={styles.backBtn} onClick={()=>setSelectedNotebookId(null)}>←</button>
             <div>
-              <h2 className={styles.detailTitle}>{currentNotebook.name}</h2>
+              <div className={styles.titleRow}>
+                <h2 className={styles.detailTitle}>{currentNotebook.name}</h2>
+                <button 
+                  className={styles.editNotebookBtn} 
+                  onClick={handleEditNotebook}
+                  title="Chỉnh sửa sổ tay"
+                >
+                  ✎
+                </button>
+              </div>
               <div className={styles.detailSub}>
                 {wordsArray.length} từ • Cập nhật {formatDate(currentNotebook.updated_at)}
               </div>
             </div>
           </div>
           <div className={styles.modeTabs}>
-            {['flashcard','quiz','more','miniTest'].map(mode => (
+            {['flashcard', 'quiz', 'miniTest'].map(mode => (
               <button
                 key={mode}
                 type="button"
-                className={`${styles.modeTab} ${activeMode===mode ? styles.modeTabActive : ''}`}
-                onClick={()=>setActiveMode(mode)}
+                className={`${styles.modeTab}`}
+                onClick={() => navigate(`/learning/notebook/${selectedNotebookId}/${mode}`)}
               >
                 {{
                   flashcard: 'Flashcard',
                   quiz: 'Quizz',
-                  more: '…',
-                  miniTest: 'miniTest'
+                  miniTest: 'Mini Test'
                 }[mode]}
               </button>
             ))}
@@ -281,8 +365,6 @@ const Learning = () => {
             <span className={styles.wordsHeaderLabel}>Từ vựng</span>
             <span className={styles.wordsHeaderLabel}>Từ vựng</span>
             <span className={styles.wordsHeaderLabel}>Từ vựng</span>
-            <span className={styles.wordsHeaderLabel}>Từ vựng</span>
-            <button className={styles.editIconBtn} title="Chế độ chỉnh sửa">✎</button>
           </div>
 
           <div className={styles.wordsGrid}>
@@ -311,13 +393,6 @@ const Learning = () => {
           </div>
 
           {renderPagination()}
-        </div>
-
-        <div className={styles.modeInfoBox}>
-          {activeMode === 'flashcard' && <p>Chế độ Flashcard (sắp hoàn thiện).</p>}
-          {activeMode === 'quiz' && <p>Chế độ Quizz (sắp hoàn thiện).</p>}
-          {activeMode === 'more' && <p>Tính năng khác (đang chuẩn bị).</p>}
-          {activeMode === 'miniTest' && <p>Mini Test (sắp hoàn thiện).</p>}
         </div>
       </div>
     );
@@ -417,6 +492,51 @@ const Learning = () => {
                 className={styles.editSave}
                 onClick={handleSaveWordEdit}
               >Lưu thay đổi</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Notebook Modal */}
+      {showEditNotebookModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowEditNotebookModal(false)}>
+          <div className={styles.editModal} onClick={e => e.stopPropagation()}>
+            <h3>Chỉnh sửa sổ tay</h3>
+            <div className={styles.editForm}>
+              <div className={styles.editField}>
+                <label>Tên sổ tay:</label>
+                <input
+                  type="text"
+                  value={editNotebookData.name}
+                  onChange={e => setEditNotebookData(prev => ({...prev, name: e.target.value}))}
+                  className={styles.editInput}
+                  disabled={updatingNotebook}
+                />
+              </div>
+            </div>
+            <div className={styles.editActionsFlex}>
+              <button
+                type="button"
+                className={`${styles.deleteBtn}`}
+                onClick={handleDeleteNotebook}
+                disabled={updatingNotebook}
+              >Xóa sổ tay</button>
+              <div className={styles.rightActions}>
+                <button
+                  type="button"
+                  className={styles.editCancel}
+                  onClick={() => setShowEditNotebookModal(false)}
+                  disabled={updatingNotebook}
+                >Hủy</button>
+                <button
+                  type="button"
+                  className={styles.editSave}
+                  onClick={handleSaveNotebookEdit}
+                  disabled={updatingNotebook || !editNotebookData.name.trim()}
+                >
+                  {updatingNotebook ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -262,4 +262,83 @@ router.put('/:userId/notebooks/:notebookId/words/:wordId', async (req, res) => {
   }
 });
 
+/**
+ * @route   PUT /api/user/:id/notebooks/:nbId
+ * @desc    Update notebook name
+ * @access  Private
+ */
+router.put('/:id/notebooks/:nbId', async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'name required' });
+    
+    const userRef = db.collection(COLLECTION).doc(req.params.id);
+    const userDoc = await userRef.get();
+    
+    if (!userDoc.exists) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    const userData = userDoc.data();
+    
+    // Check if notebook exists
+    if (!userData.notebooks || !userData.notebooks[req.params.nbId]) {
+      return res.status(404).json({ success: false, message: 'Notebook not found' });
+    }
+    
+    // Update notebook name
+    await userRef.update({
+      [`notebooks.${req.params.nbId}.name`]: name,
+      [`notebooks.${req.params.nbId}.updated_at`]: now(),
+      updated_at: now()
+    });
+    
+    const updatedNotebook = (await userRef.get()).data().notebooks[req.params.nbId];
+    return res.json({ success: true, data: updatedNotebook });
+  } catch (e) {
+    return res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+/**
+ * @route   DELETE /api/user/:id/notebooks/:nbId
+ * @desc    Delete a notebook
+ * @access  Private
+ */
+router.delete('/:id/notebooks/:nbId', async (req, res) => {
+  try {
+    const userRef = db.collection(COLLECTION).doc(req.params.id);
+    const userDoc = await userRef.get();
+    
+    if (!userDoc.exists) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    const userData = userDoc.data();
+    
+    // Check if notebook exists
+    if (!userData.notebooks || !userData.notebooks[req.params.nbId]) {
+      return res.status(404).json({ success: false, message: 'Notebook not found' });
+    }
+    
+    // Create an updated notebooks object without the deleted notebook
+    const updatedNotebooks = { ...userData.notebooks };
+    delete updatedNotebooks[req.params.nbId];
+    
+    // Update the user document with the new notebooks object
+    await userRef.update({
+      notebooks: updatedNotebooks,
+      updated_at: now()
+    });
+    
+    return res.json({ 
+      success: true, 
+      message: 'Notebook deleted successfully',
+      data: { id: req.params.nbId }
+    });
+  } catch (e) {
+    return res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 module.exports = router;

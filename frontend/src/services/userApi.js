@@ -31,3 +31,27 @@ export const updateWordInNotebook = async (userId, notebookId, wordId, wordData)
   const res = await axios.put(`${API_URL}/user/${userId}/notebooks/${notebookId}/words/${wordId}`, wordData);
   return res.data.success ? res.data.data : null;
 };
+
+// Update notebook name
+export const updateNotebookName = async (userId, notebookId, newName) => {
+  try {
+    const response = await axios.put(`${API_URL}/user/${userId}/notebooks/${notebookId}`, {
+      name: newName
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating notebook:', error);
+    throw error;
+  }
+};
+
+// Delete notebook
+export const deleteNotebook = async (userId, notebookId) => {
+  try {
+    const response = await axios.delete(`${API_URL}/user/${userId}/notebooks/${notebookId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting notebook:', error);
+    throw error;
+  }
+};

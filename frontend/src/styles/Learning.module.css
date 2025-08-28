@@ -828,6 +828,57 @@
   border-color: #1a1a1a;
 }
 
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.editNotebookBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s;
+}
+
+.editNotebookBtn:hover {
+  background: #666;
+  color: #fff;
+  border-color: #666;
+}
+
+.deleteBtn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: .7rem 1.3rem;
+  border-radius: 8px;
+  font-size: .85rem;
+  cursor: pointer;
+}
+
+.deleteBtn:hover {
+  background-color: #d32f2f;
+}
+
+.editActionsFlex {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.rightActions {
+  display: flex;
+  gap: 0.8rem;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .learningShell { padding:1.25rem 1rem 3rem; }

@@ -14,6 +14,10 @@ import Profile from './pages/Profile';
 import Sidebar from './components/common/Sidebar';
 import Footer from './components/common/Footer';
 
+import FlashcardMode from './pages/learning/FlashcardMode';
+import MiniTestMode from './pages/learning/MiniTestMode';
+import QuizMode from './pages/learning/QuizMode';
+
 function App() {
   return (
     <Router>
@@ -25,6 +29,9 @@ function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/translation" element={<Translation />} />
             <Route path="/learning" element={<Learning />} />
+            <Route path="/learning/notebook/:notebookId/flashcard" element={<FlashcardMode />} />
+            <Route path="/learning/notebook/:notebookId/quiz" element={<QuizMode />} />
+            <Route path="/learning/notebook/:notebookId/miniTest" element={<MiniTestMode />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>
