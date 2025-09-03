@@ -1,0 +1,420 @@
+.quizContainer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.backButton {
+  padding: 0.75rem 1.2rem;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backButton:hover {
+  background: #e5e5e5;
+}
+
+.title {
+  font-size: 1.4rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Loading indicator */
+.loadingIndicator {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Start screen */
+.startScreen {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  background: #fff;
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.startScreen h2 {
+  font-size: 1.8rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.startScreen p {
+  font-size: 1.1rem;
+  margin: 0.7rem 0;
+  color: #444;
+}
+
+.startActions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.startButton {
+  padding: 0.9rem 2rem;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.startButton:hover:not(:disabled) {
+  background: #333;
+}
+
+.startButton:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+.settingsButton {
+  padding: 0.9rem 1.5rem;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settingsButton:hover {
+  background: #e5e5e5;
+}
+
+.warning {
+  margin-top: 1.5rem;
+  color: #d32f2f !important;
+  font-size: 0.9rem !important;
+}
+
+/* Question container */
+.questionContainer {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.progressBar {
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: #1a1a1a;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 600;
+}
+
+.question {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.thaiQuestion {
+  font-size: 2.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.vietQuestion {
+  font-size: 2rem;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.phonetic {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.optionsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.optionButton {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 1.2rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  min-height: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.optionButton:hover:not(:disabled) {
+  background: #f9f9f9;
+  border-color: #aaa;
+}
+
+.correctOption {
+  background: #e7f7e7 !important;
+  border-color: #4caf50 !important;
+  color: #2e7d32;
+}
+
+.wrongOption {
+  background: #fdecea !important;
+  border-color: #f44336 !important;
+  color: #c62828;
+}
+
+/* Results container */
+.resultsContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  background: #fff;
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.resultsTitle {
+  font-size: 1.8rem;
+  margin-top: 0;
+  margin-bottom: 2.5rem;
+}
+
+.scoreCircle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.scoreNumber {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.scoreTotal {
+  font-size: 1.5rem;
+  color: #666;
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+}
+
+.scorePercentage {
+  font-size: 1.4rem;
+  color: #444;
+  margin-bottom: 1.5rem;
+}
+
+.resultMessage {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.resultActions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.restartButton {
+  padding: 0.9rem 2rem;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.backButton {
+  padding: 0.9rem 2rem;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.restartButton:hover {
+  background: #333;
+}
+
+.backButton:hover {
+  background: #e5e5e5;
+}
+
+/* Settings modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.settingsModal {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.settingsModal h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.settingsGroup {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.settingsLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.settingsSelect {
+  width: 80px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.settingsActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.saveButton {
+  padding: 0.7rem 1.5rem;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.saveButton:hover {
+  background: #333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .quizContainer {
+    padding: 1rem;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+  }
+  
+  .optionsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .optionButton {
+    padding: 1rem;
+  }
+  
+  .thaiQuestion {
+    font-size: 2.2rem;
+  }
+  
+  .vietQuestion {
+    font-size: 1.6rem;
+  }
+  
+  .startScreen, .resultsContainer {
+    padding: 1.5rem;
+  }
+}
