@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, NavLink } from 'react-router-dom';
 import styles from '../../styles/Sidebar.module.css';
+import { useUser } from '../../context/UserContext';
 
 const Sidebar = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+
+  const { isAdmin } = useUser();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -41,6 +44,17 @@ const Sidebar = () => {
               {sidebarOpen && <span className={styles.menuText}>{item.text}</span>}
             </Link>
           ))}
+          
+          {/* Admin link - moved inside the sidebar menu */}
+          {isAdmin && (
+            <NavLink 
+              to="/admin"
+              className={({isActive}) => `${styles.menuItem} ${!sidebarOpen ? styles.collapsed : ''} ${isActive ? styles.active : ''}`}
+            >
+              <span className={styles.menuIcon}>👑</span>
+              {sidebarOpen && <span className={styles.menuText}>Admin</span>}
+            </NavLink>
+          )}
         </div>
       </div>
 

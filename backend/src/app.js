@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const adminRoutes = require('./routes/admin');
 require('dotenv').config();
 
 const app = express();
@@ -74,6 +75,9 @@ app.use('/api/dictionary', require('./routes/dictionary'));
 // app.use('/api/translation', require('./routes/translation'));
 app.use('/api/user', require('./routes/user'));
 // app.use('/api/flashcard', require('./routes/flashcard'));
+
+// Admin routes
+app.use('/api/admin', adminRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

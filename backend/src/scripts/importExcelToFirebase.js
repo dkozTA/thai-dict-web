@@ -16,7 +16,7 @@ class ExcelImporter {
     this.processedCount = 0;
     this.errorCount = 0;
     this.errors = [];
-    this.MAX_IMPORT_LIMIT = 100; // Import limit
+    this.MAX_IMPORT_LIMIT = 1000; // Import limit
   }
 
   // Add your existing methods here...
@@ -193,7 +193,6 @@ class ExcelImporter {
     }
   }
 
-  // THIS IS THE CRITICAL METHOD THAT NEEDS TO BE IMPLEMENTED
   async importFromExcel(filePath) {
     try {
       console.log('🚀 Starting Excel import process...');

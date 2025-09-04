@@ -1,8 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import './fonts.css';
-import ThaiTestFont from './components/ThaiTestFont';
 
 // Import pages
 import Search from './pages/Search';
@@ -13,32 +12,101 @@ import Profile from './pages/Profile';
 // Import components
 import Sidebar from './components/common/Sidebar';
 import Footer from './components/common/Footer';
+import RequireAuth from './components/auth/RequireAuth';
+import RequireAdmin from './components/auth/RequireAdmin';
 
+// learning mode
 import FlashcardMode from './pages/learning/FlashcardMode';
 import MiniTestMode from './pages/learning/MiniTestMode';
 import QuizMode from './pages/learning/QuizMode';
 
+// admin
+import AdminLayout from './components/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import DictionaryManagement from './pages/admin/DictionaryManagement';
+import SuggestionsManagement from './pages/admin/SuggestionsManagement';
+import ReportsView from './pages/admin/ReportsView';
+
+// Import User Context Provider
+import { UserProvider } from './context/UserContext';
+
+const AppLayout = ({ children }) => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
+  return (
+    <>
+      {!isAdminRoute && <Sidebar />}
+      <main className={`main-content ${!isAdminRoute ? '' : 'admin-content'}`}>
+        {children}
+      </main>
+      <Footer />
+    </>
+  );
+};
+
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Sidebar />
-        <main className="main-content">
+    <UserProvider>
+      <Router>
+        <div className="App">
           <Routes>
-            <Route path="/" element={<Navigate to="/search" replace />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/translation" element={<Translation />} />
-            <Route path="/learning" element={<Learning />} />
-            <Route path="/learning/notebook/:notebookId/flashcard" element={<FlashcardMode />} />
-            <Route path="/learning/notebook/:notebookId/quiz" element={<QuizMode />} />
-            <Route path="/learning/notebook/:notebookId/miniTest" element={<MiniTestMode />} />
-            <Route path="/profile" element={<Profile />} />
+            {/* Regular routes with sidebar */}
+            <Route path="/" element={
+              <AppLayout>
+                <Navigate to="/search" replace />
+              </AppLayout>
+            } />
+            <Route path="/search" element={
+              <AppLayout>
+                <Search />
+              </AppLayout>
+            } />
+            <Route path="/translation" element={
+              <AppLayout>
+                <Translation />
+              </AppLayout>
+            } />
+            <Route path="/learning" element={
+              <AppLayout>
+                <Learning />
+              </AppLayout>
+            } />
+            <Route path="/learning/notebook/:notebookId/flashcard" element={
+              <AppLayout>
+                <FlashcardMode />
+              </AppLayout>
+            } />
+            <Route path="/learning/notebook/:notebookId/quiz" element={
+              <AppLayout>
+                <QuizMode />
+              </AppLayout>
+            } />
+            <Route path="/profile" element={
+              <AppLayout>
+                <Profile />
+              </AppLayout>
+            } />
+            
+            {/* Admin routes without main sidebar */}
+            <Route path="/admin" element={
+              <RequireAdmin>
+                <AdminLayout />
+              </RequireAdmin>
+            }>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="dictionary" element={<DictionaryManagement />} />
+              <Route path="suggestions" element={<SuggestionsManagement />} />
+              <Route path="reports" element={<ReportsView />} />
+            </Route>
           </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+        </div>
+      </Router>
+    </UserProvider>
   );
 }
+
 
 export default App;
