@@ -77,12 +77,26 @@ useEffect(() => {
     setLoading(true);
     try {
       if (isLogin) {
-        await loginUser(formData.email.trim(), formData.password);
+        // Login user with Firebase Authentication
+        const userCredential = await loginUser(formData.email.trim(), formData.password);
+        
+        // Now check if the user is active in Firestore
+        const userId = userCredential.uid;
+        const userData = await getUser(userId);
+        
+        if (userData?.isActive === false) {
+          // If user is inactive, log them out immediately and show error
+          await logoutUser();
+          throw new Error('Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.');
+        }
+        
       } else {
+        // Registration code remains unchanged
         await registerUser(formData.email.trim(), formData.password, formData.displayName.trim());
       }
       setFormData(f => ({ ...f, password: '', confirmPassword: '' }));
     } catch (err) {
+      // Handle errors
       let msg = err.message || 'Lỗi xác thực';
       if (err.code === 'auth/configuration-not-found') {
         msg = 'Cấu hình Firebase chưa đúng. Kiểm tra .env và bật Email/Password trên Firebase Console.';
@@ -90,7 +104,6 @@ useEffect(() => {
         msg = 'Email/Password chưa được bật trong Firebase Console.';
       }
       setError(msg);
-      // eslint-disable-next-line no-console
       console.error('[Auth]', err);
     } finally {
       setLoading(false);

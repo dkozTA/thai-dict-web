@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { auth } from '../services/firebase';
-import { onAuthStateChange, getCurrentUser } from '../services/userService';
+import { onAuthStateChange, getCurrentUser, logoutUser } from '../services/userService';
 import { getUser } from '../services/userApi';
 
 // Create context
@@ -16,17 +16,28 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange(async (user) => {
+      setIsLoading(true);
       if (user) {
         // User is signed in
+        setCurrentUser(user);
+        
         try {
-          // Get user data from your database
           const userData = await getUser(user.uid);
-          
-          // Set user information
-          setCurrentUser(user);
           setUserDetails(userData);
           setUserRole(userData?.role || 'user');
-          setIsActive(userData?.isActive === true || userData?.isActive === 'yes');
+          
+          // Check if the user is active and set the state
+          const isUserActive = userData?.isActive !== false;
+          setIsActive(isUserActive);
+          
+          // If user is inactive, log them out automatically
+          if (!isUserActive) {
+            console.warn('Inactive user tried to login, logging out...');
+            setTimeout(() => {
+              logoutUser().catch(err => console.error('Error logging out inactive user:', err));
+            }, 1000);
+          }
+          
           localStorage.setItem('userId', user.uid);
         } catch (error) {
           console.error("Failed to fetch user data:", error);

@@ -28,6 +28,8 @@ import DictionaryManagement from './pages/admin/DictionaryManagement';
 import SuggestionsManagement from './pages/admin/SuggestionsManagement';
 import ReportsView from './pages/admin/ReportsView';
 
+import RequireActiveUser from './components/auth/RequireActiveUser';
+
 // Import User Context Provider
 import { UserProvider } from './context/UserContext';
 
@@ -58,19 +60,26 @@ function App() {
                 <Navigate to="/search" replace />
               </AppLayout>
             } />
+            {/* Protected routes that need active user */}
             <Route path="/search" element={
               <AppLayout>
-                <Search />
+                <RequireActiveUser>
+                  <Search />
+                </RequireActiveUser>
               </AppLayout>
             } />
             <Route path="/translation" element={
               <AppLayout>
-                <Translation />
+                <RequireActiveUser>
+                  <Translation />
+                </RequireActiveUser>
               </AppLayout>
             } />
             <Route path="/learning" element={
               <AppLayout>
-                <Learning />
+                <RequireActiveUser>
+                  <Learning />
+                </RequireActiveUser>
               </AppLayout>
             } />
             <Route path="/learning/notebook/:notebookId/flashcard" element={

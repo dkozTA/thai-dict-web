@@ -126,3 +126,70 @@ export const rejectSuggestion = async (suggestionId) => {
     throw error;
   }
 };
+
+/**
+ * Get all dictionary words
+ */
+export const getAllWords = async (page = 1, limit = 10, searchTerm = '', category = 'all') => {
+  try {
+    const response = await axios.get(`${API_URL}/admin/dictionary`, {
+      params: { page, limit, search: searchTerm, category }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch dictionary words:', error);
+    throw error;
+  }
+};
+
+/**
+ * Add a new word to the dictionary
+ */
+export const addWord = async (wordData) => {
+  try {
+    const response = await axios.post(`${API_URL}/admin/dictionary`, wordData);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to add word:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update an existing word
+ */
+export const updateWord = async (wordId, wordData) => {
+  try {
+    const response = await axios.put(`${API_URL}/admin/dictionary/${wordId}`, wordData);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to update word:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a word
+ */
+export const deleteWord = async (wordId) => {
+  try {
+    const response = await axios.delete(`${API_URL}/admin/dictionary/${wordId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to delete word:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get dictionary categories
+ */
+export const getDictionaryCategories = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/dictionary/categories`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+    return ['general', 'food', 'travel'];
+  }
+};

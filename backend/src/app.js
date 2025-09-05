@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const adminRoutes = require('./routes/admin');
+const adminDictionaryRoutes = require('./routes/admin-dictionary');
 require('dotenv').config();
 
 const app = express();
@@ -78,6 +79,7 @@ app.use('/api/user', require('./routes/user'));
 
 // Admin routes
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminDictionaryRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

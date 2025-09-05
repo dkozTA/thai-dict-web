@@ -1,319 +1,213 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import styles from '../../styles/Admin.module.css';
+import { getDictionaryStats, getUserStats } from '../../services/adminApi';
 
-const DictionaryManagement = () => {
-  const [words, setWords] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedWord, setSelectedWord] = useState(null);
-  
-  // New word form state
-  const [newWord, setNewWord] = useState({
-    word: '',
-    word_transliterated: '',
-    vietnamese_meaning: '',
-    grammar_note: '',
-    category: 'general',
-    examples: []
+const AdminDashboard = () => {
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    newUsersThisMonth: 0,
+    totalWords: 0,
+    totalCategories: 0,
+    pendingSuggestions: 0,
+    totalSearches: 0
   });
   
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [wordsPerPage] = useState(10);
+  const [recentWords, setRecentWords] = useState([]);
+  const [recentUsers, setRecentUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // In a real application, you would fetch this data from your API
-    const fetchWords = async () => {
+    const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        // Mock data for now
-        const mockData = Array(25).fill().map((_, index) => ({
+        
+        // For development, we'll use mock data
+        // In production, you would fetch this from your API endpoints
+        
+        // Mock data for statistics
+        const mockStats = {
+          totalUsers: 120,
+          activeUsers: 87,
+          newUsersThisMonth: 23,
+          totalWords: 4583,
+          totalCategories: 15,
+          pendingSuggestions: 8,
+          totalSearches: 28745
+        };
+        
+        // Mock data for recent words
+        const mockRecentWords = Array(5).fill().map((_, index) => ({
           id: `word_${index}`,
           word: `คำศัพท์ ${index + 1}`,
-          word_transliterated: `KAM SAP ${index + 1}`,
           vietnamese_meaning: `Từ vựng số ${index + 1}`,
-          grammar_note: index % 3 === 0 ? 'vh' : '',
-          category: index % 5 === 0 ? 'food' : 'general',
-          examples: [
-            { thai: `ประโยค ${index + 1}`, meaning: `Câu ví dụ ${index + 1}` }
-          ],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          category: index % 2 === 0 ? 'food' : 'general',
+          created_at: new Date(Date.now() - index * 86400000).toISOString() // days ago
         }));
         
-        setWords(mockData);
+        // Mock data for recent users
+        const mockRecentUsers = Array(5).fill().map((_, index) => ({
+          id: `user_${index}`,
+          displayName: `User ${index + 1}`,
+          email: `user${index + 1}@example.com`,
+          role: index === 0 ? 'admin' : 'user',
+          created_at: new Date(Date.now() - index * 86400000).toISOString()
+        }));
+        
+        setStats(mockStats);
+        setRecentWords(mockRecentWords);
+        setRecentUsers(mockRecentUsers);
       } catch (error) {
-        console.error('Error fetching words:', error);
+        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchWords();
+    fetchDashboardData();
   }, []);
   
-  // Filter words based on search term and category
-  const filteredWords = words.filter(word => {
-    const matchesSearch = 
-      word.word.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      word.vietnamese_meaning.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      word.word_transliterated.toLowerCase().includes(searchTerm.toLowerCase());
-      
-    const matchesCategory = selectedCategory === 'all' || word.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
-  
-  // Get current words for pagination
-  const indexOfLastWord = currentPage * wordsPerPage;
-  const indexOfFirstWord = indexOfLastWord - wordsPerPage;
-  const currentWords = filteredWords.slice(indexOfFirstWord, indexOfLastWord);
-  
-  // Change page
-  const paginate = pageNumber => setCurrentPage(pageNumber);
-  
-  // Handle adding new example field
-  const handleAddExample = () => {
-    setNewWord({
-      ...newWord,
-      examples: [...newWord.examples, { thai: '', meaning: '' }]
-    });
-  };
-  
-  // Handle editing example field
-  const handleExampleChange = (index, field, value) => {
-    const updatedExamples = [...newWord.examples];
-    updatedExamples[index] = { ...updatedExamples[index], [field]: value };
-    setNewWord({ ...newWord, examples: updatedExamples });
-  };
-  
-  // Handle removing example field
-  const handleRemoveExample = (index) => {
-    const updatedExamples = newWord.examples.filter((_, i) => i !== index);
-    setNewWord({ ...newWord, examples: updatedExamples });
-  };
-  
-  // Reset form
-  const resetForm = () => {
-    setNewWord({
-      word: '',
-      word_transliterated: '',
-      vietnamese_meaning: '',
-      grammar_note: '',
-      category: 'general',
-      examples: []
-    });
-  };
-  
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // In a real application, you would send this data to your API
-    console.log('Form submitted with data:', newWord);
-    
-    // Reset form and close modal
-    resetForm();
-    setShowAddModal(false);
+  // Format date helper
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
   };
 
   return (
     <div className={styles.adminPage}>
-      <h1 className={styles.adminTitle}>Quản lý từ điển</h1>
-      
-      <div className={styles.adminActions}>
-        <div className={styles.searchFilters}>
-          <input
-            type="text"
-            placeholder="Tìm kiếm từ..."
-            className={styles.searchInput}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          
-          <select 
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className={styles.categoryFilter}
-          >
-            <option value="all">Tất cả danh mục</option>
-            <option value="general">Từ chung</option>
-            <option value="food">Thức ăn</option>
-            <option value="travel">Du lịch</option>
-          </select>
-        </div>
-        
-        <button 
-          className={styles.addButton}
-          onClick={() => setShowAddModal(true)}
-        >
-          + Thêm từ mới
-        </button>
-      </div>
+      <h1 className={styles.adminTitle}>Bảng điều khiển</h1>
       
       {loading ? (
         <div className={styles.loading}>Đang tải dữ liệu...</div>
       ) : (
         <>
-          <div className={styles.tableContainer}>
-            <table className={styles.dataTable}>
-              <thead>
-                <tr>
-                  <th>Từ tiếng Thái</th>
-                  <th>Phiên âm</th>
-                  <th>Nghĩa tiếng Việt</th>
-                  <th>Danh mục</th>
-                  <th>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentWords.map((word) => (
-                  <tr key={word.id}>
-                    <td className={styles.thaiWord}>{word.word}</td>
-                    <td>{word.word_transliterated}</td>
-                    <td>{word.vietnamese_meaning}</td>
-                    <td>{word.category}</td>
-                    <td className={styles.actions}>
-                      <button className={styles.editBtn}>Sửa</button>
-                      <button className={styles.deleteBtn}>Xóa</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Stats Overview */}
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>👤</div>
+              <div className={styles.statNumber}>{stats.totalUsers}</div>
+              <div className={styles.statLabel}>Người dùng</div>
+              <div className={styles.statDetail}>
+                <span>{stats.activeUsers} đang hoạt động</span>
+              </div>
+            </div>
+            
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>📚</div>
+              <div className={styles.statNumber}>{stats.totalWords}</div>
+              <div className={styles.statLabel}>Từ vựng</div>
+              <div className={styles.statDetail}>
+                <span>{stats.totalCategories} danh mục</span>
+              </div>
+            </div>
+            
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>🔍</div>
+              <div className={styles.statNumber}>{stats.totalSearches}</div>
+              <div className={styles.statLabel}>Lượt tìm kiếm</div>
+              <div className={styles.statDetail}>
+                <span>Tháng này</span>
+              </div>
+            </div>
+            
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>📝</div>
+              <div className={styles.statNumber}>{stats.pendingSuggestions}</div>
+              <div className={styles.statLabel}>Góp ý chờ duyệt</div>
+              <div className={styles.statDetail}>
+                <Link to="/admin/suggestions" className={styles.viewAllLink}>Xem tất cả</Link>
+              </div>
+            </div>
           </div>
           
-          <div className={styles.pagination}>
-            {Array.from({ length: Math.ceil(filteredWords.length / wordsPerPage) }).map((_, index) => (
-              <button
-                key={index}
-                className={currentPage === index + 1 ? styles.activePage : ''}
-                onClick={() => paginate(index + 1)}
-              >
-                {index + 1}
-              </button>
-            ))}
+          {/* Quick Actions */}
+          <div className={styles.quickActions}>
+            <h2 className={styles.sectionTitle}>Thao tác nhanh</h2>
+            <div className={styles.actionButtonsGrid}>
+              <Link to="/admin/dictionary" className={styles.actionButton}>
+                <span className={styles.actionIcon}>➕</span>
+                <span>Thêm từ mới</span>
+              </Link>
+              <Link to="/admin/users" className={styles.actionButton}>
+                <span className={styles.actionIcon}>👥</span>
+                <span>Quản lý người dùng</span>
+              </Link>
+              <Link to="/admin/suggestions" className={styles.actionButton}>
+                <span className={styles.actionIcon}>✅</span>
+                <span>Duyệt góp ý</span>
+              </Link>
+              <Link to="/admin/reports" className={styles.actionButton}>
+                <span className={styles.actionIcon}>📊</span>
+                <span>Xem báo cáo</span>
+              </Link>
+            </div>
+          </div>
+          
+          {/* Recent Activity */}
+          <div className={styles.recentActivity}>
+            <div className={styles.recentSection}>
+              <h2 className={styles.sectionTitle}>Từ vựng mới thêm</h2>
+              <div className={styles.tableContainer}>
+                <table className={styles.dataTable}>
+                  <thead>
+                    <tr>
+                      <th>Từ</th>
+                      <th>Nghĩa</th>
+                      <th>Danh mục</th>
+                      <th>Ngày thêm</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentWords.map(word => (
+                      <tr key={word.id}>
+                        <td className={styles.thaiWord}>{word.word}</td>
+                        <td>{word.vietnamese_meaning}</td>
+                        <td>{word.category}</td>
+                        <td>{formatDate(word.created_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className={styles.viewAllRow}>
+                  <Link to="/admin/dictionary" className={styles.viewAllLink}>Xem tất cả từ vựng →</Link>
+                </div>
+              </div>
+            </div>
+            
+            <div className={styles.recentSection}>
+              <h2 className={styles.sectionTitle}>Người dùng mới đăng ký</h2>
+              <div className={styles.tableContainer}>
+                <table className={styles.dataTable}>
+                  <thead>
+                    <tr>
+                      <th>Tên</th>
+                      <th>Email</th>
+                      <th>Vai trò</th>
+                      <th>Ngày đăng ký</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentUsers.map(user => (
+                      <tr key={user.id}>
+                        <td>{user.displayName}</td>
+                        <td>{user.email}</td>
+                        <td>{user.role}</td>
+                        <td>{formatDate(user.created_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className={styles.viewAllRow}>
+                  <Link to="/admin/users" className={styles.viewAllLink}>Xem tất cả người dùng →</Link>
+                </div>
+              </div>
+            </div>
           </div>
         </>
-      )}
-      
-      {/* Add Word Modal */}
-      {showAddModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2>Thêm từ mới</h2>
-            
-            <form onSubmit={handleSubmit} className={styles.wordForm}>
-              <div className={styles.formGroup}>
-                <label>Từ tiếng Thái:</label>
-                <input
-                  type="text"
-                  value={newWord.word}
-                  onChange={(e) => setNewWord({ ...newWord, word: e.target.value })}
-                  required
-                />
-              </div>
-              
-              <div className={styles.formGroup}>
-                <label>Phiên âm:</label>
-                <input
-                  type="text"
-                  value={newWord.word_transliterated}
-                  onChange={(e) => setNewWord({ ...newWord, word_transliterated: e.target.value })}
-                />
-              </div>
-              
-              <div className={styles.formGroup}>
-                <label>Nghĩa tiếng Việt:</label>
-                <textarea
-                  value={newWord.vietnamese_meaning}
-                  onChange={(e) => setNewWord({ ...newWord, vietnamese_meaning: e.target.value })}
-                  required
-                ></textarea>
-              </div>
-              
-              <div className={styles.formGroup}>
-                <label>Ghi chú ngữ pháp:</label>
-                <input
-                  type="text"
-                  value={newWord.grammar_note}
-                  onChange={(e) => setNewWord({ ...newWord, grammar_note: e.target.value })}
-                  placeholder="vd: vh, dt, ..."
-                />
-              </div>
-              
-              <div className={styles.formGroup}>
-                <label>Danh mục:</label>
-                <select
-                  value={newWord.category}
-                  onChange={(e) => setNewWord({ ...newWord, category: e.target.value })}
-                >
-                  <option value="general">Từ chung</option>
-                  <option value="food">Thức ăn</option>
-                  <option value="travel">Du lịch</option>
-                </select>
-              </div>
-              
-              <div className={styles.formGroup}>
-                <label>Ví dụ:</label>
-                <button 
-                  type="button" 
-                  className={styles.addExampleBtn}
-                  onClick={handleAddExample}
-                >
-                  + Thêm ví dụ
-                </button>
-                
-                {newWord.examples.map((example, index) => (
-                  <div key={index} className={styles.exampleRow}>
-                    <div className={styles.exampleInputs}>
-                      <input
-                        type="text"
-                        placeholder="Câu tiếng Thái"
-                        value={example.thai}
-                        onChange={(e) => handleExampleChange(index, 'thai', e.target.value)}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Nghĩa tiếng Việt"
-                        value={example.meaning}
-                        onChange={(e) => handleExampleChange(index, 'meaning', e.target.value)}
-                      />
-                    </div>
-                    <button 
-                      type="button" 
-                      className={styles.removeExampleBtn}
-                      onClick={() => handleRemoveExample(index)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-              
-              <div className={styles.formActions}>
-                <button 
-                  type="button" 
-                  className={styles.cancelBtn}
-                  onClick={() => setShowAddModal(false)}
-                >
-                  Hủy
-                </button>
-                <button 
-                  type="submit" 
-                  className={styles.submitBtn}
-                >
-                  Thêm từ
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
     </div>
   );
 };
 
-export default DictionaryManagement;
+export default AdminDashboard;
