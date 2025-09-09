@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import PageLayout from '../components/common/Pagelayout';
 import styles from '../styles/Search.module.css';
 // import fontStyles from '../fonts.css';
-import ThaiText from '../components/common/ThaiText';
 import ThaiWord from '../components/common/ThaiWord';
 import NotebookPicker from '../components/common/NotebookPicker';
 import { searchThaiWords, getPopularWords } from '../services/dictionaryhandle';
@@ -15,7 +14,6 @@ const Search = () => {
   const [selectedCategory, setSelectedCategory] = useState('Từ vựng');
   const [results, setResults] = useState([]);
   const [selectedWord, setSelectedWord] = useState(null);
-  const [relatedWords, setRelatedWords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [historyWords, setHistoryWords] = useState([]);
@@ -175,12 +173,6 @@ const handleCreateNotebook = async () => {
     if (!text) return '';
     const first = text.split(/(?<=\.)\s+|;|,/)[0];
     return first.trim();
-  };
-
-  const highlightTerm = (text) => {
-    if (!text || !searchTerm) return text;
-    const rex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'ig');
-    return text.replace(rex, '<mark>$1</mark>');
   };
 
   return (

@@ -12,7 +12,6 @@ import Profile from './pages/Profile';
 // Import components
 import Sidebar from './components/common/Sidebar';
 import Footer from './components/common/Footer';
-import RequireAuth from './components/auth/RequireAuth';
 import RequireAdmin from './components/auth/RequireAdmin';
 
 // learning mode
