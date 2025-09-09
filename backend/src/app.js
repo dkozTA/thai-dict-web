@@ -4,6 +4,8 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const adminRoutes = require('./routes/admin');
 const adminDictionaryRoutes = require('./routes/admin-dictionary');
+const adminSuggestionRoutes = require('./routes/admin-suggestions');
+const userSuggestionRoutes = require('./routes/user-suggestions');
 require('dotenv').config();
 
 const app = express();
@@ -77,9 +79,12 @@ app.use('/api/dictionary', require('./routes/dictionary'));
 app.use('/api/user', require('./routes/user'));
 // app.use('/api/flashcard', require('./routes/flashcard'));
 
+app.use('/api/user', userSuggestionRoutes);
+
 // Admin routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminDictionaryRoutes);
+app.use('/api/admin', adminSuggestionRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

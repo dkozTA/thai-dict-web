@@ -8,6 +8,7 @@ import NotebookPicker from '../components/common/NotebookPicker';
 import { searchThaiWords, getPopularWords } from '../services/dictionaryhandle';
 import { containsThaiCharacters, containsVietnameseCharacters } from '../utils/textUtils';
 import { addWordToNotebook, addSearchHistory, getUser, createNotebook } from '../services/userApi';
+import SuggestionForm from '../components/dictionary/SuggestionForm';
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,6 +24,7 @@ const Search = () => {
   const [selectedNotebookId, setSelectedNotebookId] = useState('');
   const [newNotebookName, setNewNotebookName] = useState('');
   const [savingNotebook, setSavingNotebook] = useState(false);
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
 
   // Load history on mount
   useEffect(() => {
@@ -271,11 +273,16 @@ const handleCreateNotebook = async () => {
                   <div className={styles.wordTitle}>
                     <ThaiWord text={selectedWord.word} />
                   </div>
-                  {/* Placeholder for add button */}
+                  <div className={styles.wordActions}>
                     <button className={styles.addBtn} type="button" title="Lưu"
                       onClick={handleAddCurrentWord}>
                       +
                     </button>
+                    <button className={styles.suggestBtn} type="button" title="Góp ý"
+                      onClick={() => setShowSuggestionModal(true)}>
+                      ✎
+                    </button>
+                  </div>
                 </div>
 
                 <div className={styles.sectionRow}>
@@ -356,6 +363,21 @@ const handleCreateNotebook = async () => {
         </div>
       </div>
 
+      
+      {showSuggestionModal && selectedWord && (
+        <div className={styles.modalOverlay} onClick={() => setShowSuggestionModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <SuggestionForm 
+              wordData={selectedWord} 
+              onClose={() => setShowSuggestionModal(false)}
+              onSuccess={() => {
+                setShowSuggestionModal(false);
+                alert('Cảm ơn bạn đã góp ý! Góp ý của bạn đang được xem xét.');
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <NotebookPicker
         show={showNotebookPicker}

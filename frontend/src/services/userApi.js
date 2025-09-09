@@ -55,3 +55,36 @@ export const deleteNotebook = async (userId, notebookId) => {
     throw error;
   }
 };
+
+/**
+ * Submit a new word suggestion
+ */
+export const submitNewWordSuggestion = async (userId, wordData, note = '') => {
+  try {
+    const response = await axios.post(`${API_URL}/user/${userId}/suggestions/new-word`, {
+      word: wordData,
+      note
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to submit new word suggestion:', error);
+    throw error;
+  }
+};
+
+/**
+ * Submit an edit suggestion for an existing word
+ */
+export const submitEditWordSuggestion = async (userId, wordId, wordData, note = '') => {
+  try {
+    const response = await axios.post(`${API_URL}/user/${userId}/suggestions/edit-word`, {
+      wordId,
+      word: wordData,
+      note
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to submit word edit suggestion:', error);
+    throw error;
+  }
+};
