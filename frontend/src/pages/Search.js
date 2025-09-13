@@ -57,10 +57,8 @@ const Search = () => {
   useEffect(() => {
     if (results.length > 0) {
       setSelectedWord(results[0]);
-      setRelatedWords(results.slice(1, 6));
     } else {
       setSelectedWord(null);
-      setRelatedWords([]);
     }
   }, [results]);
 

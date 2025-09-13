@@ -18,6 +18,7 @@ import RequireAdmin from './components/auth/RequireAdmin';
 import FlashcardMode from './pages/learning/FlashcardMode';
 import MiniTestMode from './pages/learning/MiniTestMode';
 import QuizMode from './pages/learning/QuizMode';
+import SharedNotebookView from './pages/SharedNotebookView';
 
 // admin
 import AdminLayout from './components/admin/AdminLayout';
@@ -81,14 +82,39 @@ function App() {
                 </RequireActiveUser>
               </AppLayout>
             } />
-            <Route path="/learning/notebook/:notebookId/flashcard" element={
+            <Route path="/learning/flashcard/:notebookId" element={
               <AppLayout>
-                <FlashcardMode />
+                <RequireActiveUser>
+                  <FlashcardMode />
+                </RequireActiveUser>
               </AppLayout>
             } />
-            <Route path="/learning/notebook/:notebookId/quiz" element={
+            <Route path="/learning/quiz/:notebookId" element={
               <AppLayout>
-                <QuizMode />
+                <RequireActiveUser>
+                  <QuizMode />
+                </RequireActiveUser>
+              </AppLayout>
+            } />
+            <Route path="/shared-notebook/:id" element={
+              <AppLayout>
+                <RequireActiveUser>
+                  <SharedNotebookView />
+                </RequireActiveUser>
+              </AppLayout>
+            } />
+            <Route path="/shared-notebook/:id/flashcard" element={
+              <AppLayout>
+                <RequireActiveUser>
+                  <FlashcardMode isShared={true} />
+                </RequireActiveUser>
+              </AppLayout>
+            } />
+            <Route path="/shared-notebook/:id/quiz" element={
+              <AppLayout>
+                <RequireActiveUser>
+                  <QuizMode isShared={true} />
+                </RequireActiveUser>
               </AppLayout>
             } />
             <Route path="/profile" element={

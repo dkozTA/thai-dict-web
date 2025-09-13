@@ -6,7 +6,13 @@ const adminRoutes = require('./routes/admin');
 const adminDictionaryRoutes = require('./routes/admin-dictionary');
 const adminSuggestionRoutes = require('./routes/admin-suggestions');
 const userSuggestionRoutes = require('./routes/user-suggestions');
+const adminReportsRoutes = require('./routes/admin-reports');
+const sharedNotebooksRoutes = require('./routes/shared-notebooks');
 require('dotenv').config();
+console.log('ENV CHECK:', {
+  NODE_ENV: process.env.NODE_ENV,
+  DISABLE_ADMIN_AUTH: process.env.DISABLE_ADMIN_AUTH
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -79,12 +85,15 @@ app.use('/api/dictionary', require('./routes/dictionary'));
 app.use('/api/user', require('./routes/user'));
 // app.use('/api/flashcard', require('./routes/flashcard'));
 
+app.use('/api/shared-notebooks', sharedNotebooksRoutes);
+
 app.use('/api/user', userSuggestionRoutes);
 
 // Admin routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminDictionaryRoutes);
 app.use('/api/admin', adminSuggestionRoutes);
+app.use('/api/admin', adminReportsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

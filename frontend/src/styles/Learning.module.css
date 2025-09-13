@@ -879,6 +879,110 @@
   gap: 0.8rem;
 }
 
+
+
+/* Shared badge */
+.sharedBadge {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+/* Share button */
+.shareBtn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.unshareBtn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Share modal */
+.shareModal {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 95%;
+  max-width: 500px;
+}
+
+.shareForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formField label {
+  font-weight: 500;
+}
+
+.shareTextarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.shareActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.cancelBtn {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.shareSubmitBtn {
+  background-color: #4a6fa5;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.learnBtn {
+  background-color: #4a6fa5;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-left: 8px; /* Add margin to separate buttons */
+  display: inline-block; /* Make sure it behaves as a block element */
+  transition: background-color 0.2s;
+}
+
+.learnBtn:hover {
+  background-color: #3a5b8c;
+  color: white;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .learningShell { padding:1.25rem 1rem 3rem; }
@@ -892,4 +996,3 @@
   .wordsGrid { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
   .notebookGrid, .discoverGrid { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
 }
-

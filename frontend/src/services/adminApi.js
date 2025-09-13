@@ -193,3 +193,39 @@ export const getDictionaryCategories = async () => {
     return ['general', 'food', 'travel'];
   }
 };
+
+/**
+ * Get reports data based on time range
+ */
+export const getReports = async (timeRange = 'month') => {
+  try {
+    // Use real API endpoint instead of mock data
+    const response = await axios.get(`${API_URL}/admin/reports`, {
+      params: { timeRange }
+    });
+    return response.data.data;
+    
+    // Comment out or remove the mock data
+    // return getMockReportData(timeRange);
+  } catch (error) {
+    console.error('Failed to fetch reports:', error);
+    // Still return empty data structure on error
+    return getEmptyReportData();
+  }
+};
+
+// Empty data structure for error cases
+const getEmptyReportData = () => ({
+  searchStats: [],
+  userStats: {
+    totalUsers: 0,
+    activeUsers: 0,
+    newUsers: 0,
+    roleDistribution: { user: 0, editor: 0, admin: 0 }
+  },
+  wordStats: [],
+  categoryDistribution: {},
+  userGrowth: [],
+  searchTerms: [],
+  suggestionStats: { pending: 0, approved: 0, rejected: 0 }
+});

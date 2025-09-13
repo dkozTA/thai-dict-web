@@ -341,4 +341,131 @@ router.delete('/:id/notebooks/:nbId', async (req, res) => {
   }
 });
 
+/**
+ * @route   POST /api/user/:id/notebooks/:nbId/share
+ * @desc    Share a notebook
+ * @access  Private
+ */
+router.post('/:id/notebooks/:nbId/share', async (req, res) => {
+  try {
+    const { id, nbId } = req.params;
+    const { visibility = 'public', description = '' } = req.body;
+    
+    // Get user document
+    const userRef = db.collection('user').doc(id);
+    const userDoc = await userRef.get();
+    
+    if (!userDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    const userData = userDoc.data();
+    
+    // Check if notebook exists
+    if (!userData.notebooks || !userData.notebooks[nbId]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notebook not found'
+      });
+    }
+    
+    const notebook = userData.notebooks[nbId];
+    
+    // Check if already shared
+    const existingShareDoc = await db.collection('shared_notebooks')
+      .where('userId', '==', id)
+      .where('notebookId', '==', nbId)
+      .limit(1)
+      .get();
+    
+    // If already shared, update it
+    if (!existingShareDoc.empty) {
+      await existingShareDoc.docs[0].ref.update({
+        visibility,
+        description,
+        updated_at: new Date()
+      });
+      
+      return res.json({
+        success: true,
+        message: 'Notebook share updated successfully',
+        data: {
+          id: existingShareDoc.docs[0].id
+        }
+      });
+    }
+    
+    // Otherwise create new shared notebook
+    const sharedNotebookRef = await db.collection('shared_notebooks').add({
+      userId: id,
+      notebookId: nbId,
+      name: notebook.name,
+      words: notebook.words || {},
+      visibility,
+      description,
+      ownerName: userData.displayName || 'Anonymous',
+      views: 0,
+      created_at: new Date(),
+      updated_at: new Date()
+    });
+    
+    return res.json({
+      success: true,
+      message: 'Notebook shared successfully',
+      data: {
+        id: sharedNotebookRef.id
+      }
+    });
+  } catch (error) {
+    console.error('Error sharing notebook:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+/**
+ * @route   DELETE /api/user/:id/notebooks/:nbId/share
+ * @desc    Stop sharing a notebook
+ * @access  Private
+ */
+router.delete('/:id/notebooks/:nbId/share', async (req, res) => {
+  try {
+    const { id, nbId } = req.params;
+    
+    // Find the shared notebook document
+    const sharedNotebooksRef = db.collection('shared_notebooks')
+      .where('userId', '==', id)
+      .where('notebookId', '==', nbId)
+      .limit(1);
+      
+    const snapshot = await sharedNotebooksRef.get();
+    
+    if (snapshot.empty) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shared notebook not found'
+      });
+    }
+    
+    // Delete the shared notebook
+    await snapshot.docs[0].ref.delete();
+    
+    return res.json({
+      success: true,
+      message: 'Notebook sharing removed successfully'
+    });
+  } catch (error) {
+    console.error('Error unsharing notebook:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

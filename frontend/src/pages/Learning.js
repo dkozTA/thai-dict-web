@@ -1,9 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import PageLayout from '../components/common/Pagelayout';
 import NotebookPicker from '../components/common/NotebookPicker';
 import styles from '../styles/Learning.module.css';
-import { getUser, createNotebook, updateWordInNotebook, updateNotebookName, deleteNotebook } from '../services/userApi';
+import { firestore } from '../services/firebase';
+import { 
+  getUser, 
+  createNotebook, 
+  updateWordInNotebook, 
+  updateNotebookName, 
+  deleteNotebook, 
+  shareNotebook,       
+  unshareNotebook,     
+  getSharedNotebooks   
+} from '../services/userApi';
 
 const PAGE_SIZE = 12;
 
@@ -20,6 +30,17 @@ const Learning = () => {
     name: ''
   });
   const [updatingNotebook, setUpdatingNotebook] = useState(false);
+
+  // Sharing notebook states
+  const [isShared, setIsShared] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareData, setShareData] = useState({
+    visibility: 'public',
+    description: ''
+  });
+  const [sharingInProgress, setSharingInProgress] = useState(false);
+  const [sharedNotebooks, setSharedNotebooks] = useState([]);
+  const [loadingShared, setLoadingShared] = useState(false);
   
   // Create notebook modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -72,6 +93,7 @@ const Learning = () => {
         setLoadingNb(false);
       }
     })();
+      fetchSharedNotebooks();
   }, []);
 
   const notebooksArray = useMemo(
@@ -90,6 +112,67 @@ const Learning = () => {
     () => wordsArray.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE),
     [wordsArray, currentPage]
   );
+
+  const checkIfShared = useCallback(async (notebookId) => {
+    if (!notebookId) return;
+    
+    try {
+      const snapshot = await firestore
+      .collection('shared_notebooks')
+      .where('notebookId', '==', notebookId)
+      .limit(1)
+      .get();
+    
+    setIsShared(!snapshot.empty);
+  } catch (error) {
+    console.error('Error checking if notebook is shared:', error);
+  }
+  }, []);
+
+  // Call this when notebook changes
+  useEffect(() => {
+    if (selectedNotebookId) {
+      checkIfShared(selectedNotebookId);
+    }
+  }, [selectedNotebookId, checkIfShared]);
+
+  // Add share/unshare functionality
+  const handleShareNotebook = async () => {
+    const userId = localStorage.getItem('userId');
+    if (!userId || !selectedNotebookId) return;
+    
+    setSharingInProgress(true);
+    try {
+      await shareNotebook(userId, selectedNotebookId, shareData);
+      setShowShareModal(false);
+      setIsShared(true);
+      alert('Sổ tay đã được chia sẻ thành công!');
+    } catch (error) {
+      alert('Không thể chia sẻ sổ tay. Vui lòng thử lại.');
+    } finally {
+      setSharingInProgress(false);
+    }
+  };
+
+const handleUnshareNotebook = async () => {
+  const userId = localStorage.getItem('userId');
+  if (!userId || !selectedNotebookId) return;
+  
+  if (!window.confirm('Bạn có chắc muốn ngừng chia sẻ sổ tay này?')) {
+    return;
+  }
+  
+  setSharingInProgress(true);
+    try {
+      await unshareNotebook(userId, selectedNotebookId);
+      setIsShared(false);
+      alert('Đã ngừng chia sẻ sổ tay.');
+    } catch (error) {
+      alert('Không thể ngừng chia sẻ sổ tay. Vui lòng thử lại.');
+    } finally {
+      setSharingInProgress(false);
+    }
+  };
 
   const handleSelectNotebook = (id) => {
     setSelectedNotebookId(id);
@@ -302,17 +385,26 @@ const Learning = () => {
       <section className={styles.sectionBlock}>
         <h3 className={styles.sectionHeading}>Khám phá</h3>
         <div className={styles.discoverGrid}>
-          {[1,2].map(i => (
-            <div key={i} className={`${styles.nbCard} ${styles.discoverCard}`}>
-              <div className={styles.nbName}>Note mẫu {i}</div>
+          {loadingShared && <div className={styles.nbLoading}>Đang tải sổ tay chia sẻ...</div>}
+          
+          {!loadingShared && sharedNotebooks.length > 0 && sharedNotebooks.map(notebook => (
+            <div 
+              key={notebook.id} 
+              className={`${styles.nbCard} ${styles.discoverCard}`}
+              onClick={() => navigate(`/shared-notebook/${notebook.id}`)}
+            >
+              <div className={styles.nbName}>{notebook.name}</div>
               <div className={styles.nbMetaRow}>
-                <span>{(i*10)} từ</span>
-                <span>• TV</span>
+                <span>{notebook.wordCount} từ</span>
+                <span>• {notebook.ownerName}</span>
               </div>
-              <div className={styles.nbDate}>Lượt xem: {(i*1000)+231}</div>
+              <div className={styles.nbDate}>Lượt xem: {notebook.views || 0}</div>
             </div>
           ))}
-          <div className={styles.nbPlaceholder}>Sẽ hiển thị sổ tay công khai của người khác…</div>
+          
+          {!loadingShared && sharedNotebooks.length === 0 && (
+            <div className={styles.nbPlaceholder}>Chưa có sổ tay nào được chia sẻ</div>
+          )}
         </div>
       </section>
     </div>
@@ -339,24 +431,30 @@ const Learning = () => {
               </div>
               <div className={styles.detailSub}>
                 {wordsArray.length} từ • Cập nhật {formatDate(currentNotebook.updated_at)}
+                {isShared && <span className={styles.sharedBadge}>• Đã chia sẻ</span>}
               </div>
             </div>
           </div>
-          <div className={styles.modeTabs}>
-            {['flashcard', 'quiz', 'miniTest'].map(mode => (
-              <button
-                key={mode}
-                type="button"
-                className={`${styles.modeTab}`}
-                onClick={() => navigate(`/learning/notebook/${selectedNotebookId}/${mode}`)}
-              >
-                {{
-                  flashcard: 'Flashcard',
-                  quiz: 'Quizz',
-                  miniTest: 'Mini Test'
-                }[mode]}
-              </button>
-            ))}
+          <div className={styles.detailRight}>
+            <button
+              className={isShared ? styles.unshareBtn : styles.shareBtn}
+              onClick={isShared ? handleUnshareNotebook : () => setShowShareModal(true)}
+              disabled={sharingInProgress}
+            >
+              {sharingInProgress ? '...' : (isShared ? 'Ngừng chia sẻ' : 'Chia sẻ')}
+            </button>
+            <Link
+              to={`/learning/quiz/${selectedNotebookId}`}
+              className={styles.learnBtn}
+            >
+              Quiz
+            </Link>
+            <Link
+              to={`/learning/flashcard/${selectedNotebookId}`}
+              className={styles.learnBtn}
+            >
+              Flashcard
+            </Link>
           </div>
         </div>
 
@@ -396,6 +494,18 @@ const Learning = () => {
         </div>
       </div>
     );
+  };
+
+  const fetchSharedNotebooks = async () => {
+    setLoadingShared(true);
+    try {
+      const data = await getSharedNotebooks();
+      setSharedNotebooks(data);
+    } catch (error) {
+      console.error('Error fetching shared notebooks:', error);
+    } finally {
+      setLoadingShared(false);
+    }
   };
 
   return (
@@ -535,6 +645,46 @@ const Learning = () => {
                   disabled={updatingNotebook || !editNotebookData.name.trim()}
                 >
                   {updatingNotebook ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Notebook Modal */}
+      {showShareModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowShareModal(false)}>
+          <div className={styles.shareModal} onClick={e => e.stopPropagation()}>
+            <h3>Chia sẻ sổ tay</h3>
+            <div className={styles.shareForm}>
+              <div className={styles.formField}>
+                <label>Mô tả sổ tay (không bắt buộc):</label>
+                <textarea
+                  value={shareData.description}
+                  onChange={e => setShareData(prev => ({...prev, description: e.target.value}))}
+                  placeholder="Thêm mô tả ngắn về sổ tay này..."
+                  className={styles.shareTextarea}
+                  rows={3}
+                  disabled={sharingInProgress}
+                />
+              </div>
+              <div className={styles.shareActions}>
+                <button
+                  type="button"
+                  className={styles.cancelBtn}
+                  onClick={() => setShowShareModal(false)}
+                  disabled={sharingInProgress}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className={styles.shareSubmitBtn}
+                  onClick={handleShareNotebook}
+                  disabled={sharingInProgress}
+                >
+                  {sharingInProgress ? 'Đang chia sẻ...' : 'Chia sẻ'}
                 </button>
               </div>
             </div>

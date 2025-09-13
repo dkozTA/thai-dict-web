@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('../config/firebase-admin');
+const { db, admin } = require('../config/firebase-admin');
 
 // Helper function to normalize text for search
 const normalizeSearchTerm = (text) => {
@@ -189,6 +189,17 @@ router.get('/search', async (req, res) => {
             }
           });
         }
+      }
+    }
+
+    // increase search_count when someone search something
+    for (const result of results.slice(0, parseInt(limit))) {
+      if (result.id) {
+        // Increment search_count for this word
+        await db.collection('dictionary').doc(result.id).update({
+          search_count: admin.firestore.FieldValue.increment(1),
+          last_searched_at: new Date()
+        });
       }
     }
 

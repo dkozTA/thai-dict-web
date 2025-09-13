@@ -3,10 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PageLayout from '../../components/common/Pagelayout';
 import ThaiWord from '../../components/common/ThaiWord';
 import styles from '../../styles/QuizMode.module.css';
-import { getUser } from '../../services/userApi';
+import { getUser, getSharedNotebook } from '../../services/userApi';
 
-const QuizMode = () => {
-  const { notebookId } = useParams();
+const QuizMode = ({ isShared }) => {
+  const params = useParams();
+  const notebookId = params.id || params.notebookId;
   const navigate = useNavigate();
   
   // State variables
@@ -34,7 +35,7 @@ const QuizMode = () => {
   // Load notebook data
   useEffect(() => {
     const userId = localStorage.getItem('userId');
-    if (!userId || !notebookId) {
+    if (!notebookId) {
       navigate('/learning');
       return;
     }
@@ -42,17 +43,33 @@ const QuizMode = () => {
     (async () => {
       try {
         setLoading(true);
-        const userData = await getUser(userId);
-        if (!userData?.notebooks?.[notebookId]) {
-          navigate('/learning');
-          return;
+        
+        let nb;
+        let wordsArray;
+        
+        if (isShared) {
+          // Load shared notebook
+          const sharedNotebook = await getSharedNotebook(notebookId);
+          nb = sharedNotebook;
+          
+          // Convert words to array if needed
+          if (nb && nb.words && typeof nb.words === 'object' && !Array.isArray(nb.words)) {
+            wordsArray = Object.values(nb.words);
+          } else {
+            wordsArray = nb.words || [];
+          }
+        } else {
+          // Load user's own notebook
+          const userData = await getUser(userId);
+          if (!userData?.notebooks?.[notebookId]) {
+            navigate('/learning');
+            return;
+          }
+          nb = userData.notebooks[notebookId];
+          wordsArray = Object.values(nb.words || {});
         }
 
-        const nb = userData.notebooks[notebookId];
         setNotebook(nb);
-        
-        // Convert words object to array
-        const wordsArray = Object.values(nb.words || {});
         setAllWords(wordsArray);
       } catch (error) {
         console.error('Failed to load notebook:', error);
@@ -60,7 +77,7 @@ const QuizMode = () => {
         setLoading(false);
       }
     })();
-  }, [notebookId, navigate]);
+  }, [notebookId, navigate, isShared]);
   
   // Generate quiz questions
   const questions = useMemo(() => {
@@ -289,7 +306,7 @@ const QuizMode = () => {
         
         <button 
           className={styles.backButton}
-          onClick={() => navigate('/learning')}
+          onClick={handleBackNavigation}
         >
           Trở về sổ tay
         </button>
@@ -358,13 +375,21 @@ const QuizMode = () => {
     </div>
   );
 
+  const handleBackNavigation = () => {
+    if (isShared) {
+      navigate(`/shared-notebook/${notebookId}`);
+    } else {
+      navigate('/learning');
+    }
+  };
+
   return (
     <PageLayout title={`Quiz: ${notebook?.name || 'Sổ tay'}`}>
       <div className={styles.quizContainer}>
         <div className={styles.header}>
           <button 
             className={styles.backButton}
-            onClick={() => navigate('/learning')}
+            onClick={handleBackNavigation}
           >
             ← Trở lại
           </button>

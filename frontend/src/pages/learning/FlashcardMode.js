@@ -3,10 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PageLayout from '../../components/common/Pagelayout';
 import ThaiWord from '../../components/common/ThaiWord';
 import styles from '../../styles/FlashcardMode.module.css'; // We'll create this soon
-import { getUser } from '../../services/userApi';
+import { getUser, getSharedNotebook } from '../../services/userApi';
 
-const FlashcardMode = () => {
-  const { notebookId } = useParams();
+const FlashcardMode = ( { isShared }) => {
+  const params = useParams();
+  const notebookId = params.id || params.notebookId;
   const navigate = useNavigate();
   const [notebook, setNotebook] = useState(null);
   const [words, setWords] = useState([]);
@@ -44,7 +45,7 @@ const FlashcardMode = () => {
   // Load notebook data
   useEffect(() => {
     const userId = localStorage.getItem('userId');
-    if (!userId || !notebookId) {
+    if (!notebookId) {
       navigate('/learning');
       return;
     }
@@ -52,17 +53,33 @@ const FlashcardMode = () => {
     (async () => {
       try {
         setLoading(true);
-        const userData = await getUser(userId);
-        if (!userData?.notebooks?.[notebookId]) {
-          navigate('/learning');
-          return;
+        
+        let nb;
+        let wordsArray;
+        
+        if (isShared) {
+          // Load shared notebook
+          const sharedNotebook = await getSharedNotebook(notebookId);
+          nb = sharedNotebook;
+          
+          // Convert words to array if needed
+          if (nb && nb.words && typeof nb.words === 'object' && !Array.isArray(nb.words)) {
+            wordsArray = Object.values(nb.words);
+          } else {
+            wordsArray = nb.words || [];
+          }
+        } else {
+          // Load user's own notebook
+          const userData = await getUser(userId);
+          if (!userData?.notebooks?.[notebookId]) {
+            navigate('/learning');
+            return;
+          }
+          nb = userData.notebooks[notebookId];
+          wordsArray = Object.values(nb.words || {});
         }
 
-        const nb = userData.notebooks[notebookId];
         setNotebook(nb);
-        
-        // Convert words object to array and shuffle
-        const wordsArray = Object.values(nb.words || {});
         setWords(shuffleArray(wordsArray));
       } catch (error) {
         console.error('Failed to load notebook:', error);
@@ -70,7 +87,7 @@ const FlashcardMode = () => {
         setLoading(false);
       }
     })();
-  }, [notebookId, navigate]);
+  }, [notebookId, navigate, isShared]);
 
   // Shuffle array function
   const shuffleArray = (array) => {
@@ -117,13 +134,22 @@ const FlashcardMode = () => {
     return !sideSettings.showWord && !sideSettings.showPhonetic && !sideSettings.showMeaning;
   };
 
+  // Update the back button navigation
+  const handleBackNavigation = () => {
+    if (isShared) {
+      navigate(`/shared-notebook/${notebookId}`);
+    } else {
+      navigate('/learning');
+    }
+  };
+
   return (
     <PageLayout title={`Flashcard: ${notebook?.name || 'Sổ tay'}`}>
       <div className={styles.flashcardContainer}>
         <div className={styles.header}>
           <button 
             className={styles.backButton}
-            onClick={() => navigate(`/learning`)}
+            onClick={handleBackNavigation}
           >
             ← Trở lại
           </button>
