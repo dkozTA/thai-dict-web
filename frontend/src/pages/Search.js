@@ -77,6 +77,9 @@ const Search = () => {
     setLoading(true);
     setError('');
     try {
+      // Get user ID if available
+      const userId = localStorage.getItem('userId') || 'anonymous';
+
       // Decide search type
       let searchType = 'all';
       if (selectedCategory === 'Từ vựng') {
@@ -84,7 +87,7 @@ const Search = () => {
         else if (containsThaiCharacters(searchTerm)) searchType = 'word';
         else if (/^[a-zA-Z0-9\s\-(\(\))]+$/.test(searchTerm)) searchType = 'phonetic';
       }
-      const data = await searchThaiWords(searchTerm, searchType);
+      const data = await searchThaiWords(searchTerm, searchType, userId);
       setResults(data);
       if (data.length > 0) {
         const wasNew = !historyWords.includes(searchTerm);

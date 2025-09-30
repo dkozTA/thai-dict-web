@@ -4,6 +4,7 @@ import PageLayout from '../components/common/Pagelayout';
 import NotebookPicker from '../components/common/NotebookPicker';
 import styles from '../styles/Learning.module.css';
 import { firestore } from '../services/firebase';
+import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { 
   getUser, 
   createNotebook, 
@@ -117,16 +118,16 @@ const Learning = () => {
     if (!notebookId) return;
     
     try {
-      const snapshot = await firestore
-      .collection('shared_notebooks')
-      .where('notebookId', '==', notebookId)
-      .limit(1)
-      .get();
-    
-    setIsShared(!snapshot.empty);
-  } catch (error) {
-    console.error('Error checking if notebook is shared:', error);
-  }
+      const q = query(
+        collection(firestore, 'shared_notebooks'),
+        where('notebookId', '==', notebookId),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+      setIsShared(!snapshot.empty);
+    } catch (error) {
+      console.error('Error checking if notebook is shared:', error);
+    }
   }, []);
 
   // Call this when notebook changes

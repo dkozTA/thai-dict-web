@@ -229,3 +229,77 @@ const getEmptyReportData = () => ({
   searchTerms: [],
   suggestionStats: { pending: 0, approved: 0, rejected: 0 }
 });
+
+/**
+ * Get recent words added to dictionary
+ */
+export const getRecentWords = async (limit = 5) => {
+  try {
+    const response = await axios.get(`${API_URL}/admin/dictionary/recent`, {
+      params: { limit }
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error('Failed to fetch recent words:', error);
+    return [];
+  }
+};
+
+/**
+ * Get recent users registered
+ */
+export const getRecentUsers = async (limit = 5) => {
+  try {
+    const response = await axios.get(`${API_URL}/admin/users/recent`, {
+      params: { limit }
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error('Failed to fetch recent users:', error);
+    return [];
+  }
+};
+
+/**
+ * Get suggestion statistics
+ */
+export const getSuggestionStats = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/admin/suggestions/stats`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Failed to fetch suggestion stats:', error);
+    return { pending: 0, approved: 0, rejected: 0 };
+  }
+};
+
+/**
+ * Get translation feedback reports
+ */
+export const getTranslationFeedback = async (status = 'all') => {
+  try {
+    const response = await axios.get(`${API_URL}/admin/translations/feedback`, {
+      params: { status }
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error('Failed to fetch translation feedback:', error);
+    return [];
+  }
+};
+
+/**
+ * Update translation feedback status
+ */
+export const updateTranslationFeedback = async (id, status, adminNote = '') => {
+  try {
+    const response = await axios.patch(`${API_URL}/admin/translations/feedback/${id}`, {
+      status,
+      adminNote
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to update translation feedback:', error);
+    throw error;
+  }
+};

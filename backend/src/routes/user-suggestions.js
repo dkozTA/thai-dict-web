@@ -130,4 +130,63 @@ router.post('/:userId/suggestions/edit-word', async (req, res) => {
   }
 });
 
+/**
+ * @route   POST /api/user/:userId/suggestions/translation
+ * @desc    Submit feedback about an incorrect translation
+ */
+router.post('/:userId/suggestions/translation', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { 
+      originalText,
+      translatedText,
+      sourceLanguage,
+      feedback
+    } = req.body;
+    
+    if (!originalText || !translatedText || !feedback) {
+      return res.status(400).json({
+        success: false,
+        message: 'Original text, translated text, and feedback are required'
+      });
+    }
+    
+    // Create the suggestion
+    const suggestionData = {
+      type: 'translation_feedback',
+      originalText,
+      translatedText,
+      sourceLanguage,
+      feedback,
+      userId,
+      status: 'pending',
+      created_at: new Date()
+    };
+    
+    const suggestionRef = await db.collection('suggestions').add(suggestionData);
+    
+    // Notify admins
+    const adminSnapshot = await db.collection('user').where('role', '==', 'admin').get();
+    adminSnapshot.forEach(async (adminDoc) => {
+      await db.collection('user').doc(adminDoc.id).collection('notifications').add({
+        type: 'translation_feedback',
+        message: 'Có góp ý về bản dịch',
+        created_at: new Date(),
+        read: false
+      });
+    });
+    
+    return res.json({
+      success: true,
+      message: 'Cảm ơn bạn đã góp ý về bản dịch.'
+    });
+  } catch (error) {
+    console.error('Error submitting translation feedback:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while submitting feedback'
+    });
+  }
+});
+
 module.exports = router;

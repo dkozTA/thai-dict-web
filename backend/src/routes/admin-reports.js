@@ -143,7 +143,7 @@ router.get('/reports', async (req, res) => {
       .limit(50)
       .get();
     
-    reportData.searchTerm = [];
+    reportData.searchTerms = [];
     topWordsSnapshot.forEach(doc => {
       const wordData = doc.data();
       if (wordData.search_count > 0) {
@@ -154,25 +154,39 @@ router.get('/reports', async (req, res) => {
       }
     });
     
-    // Get search statistics over time
-    // This would typically come from analytics data or logs
-    // For now, we'll generate placeholder data based on the timeRange
+    // Get search statistics over time from search_logs collection
+    const searchEndDate = new Date();
+
+    // Get all search logs in the time period
+    const searchLogsSnapshot = await db.collection('search_logs')
+      .where('timestamp', '>=', startDate)
+      .where('timestamp', '<=', searchEndDate)
+      .get();
+
+    // Group by date
+    const searchesByDate = {};
+
+    searchLogsSnapshot.forEach(doc => {
+      const data = doc.data();
+      const timestamp = data.timestamp.toDate();
+      const dateStr = timestamp.toLocaleDateString('vi-VN', dateFormat);
+      
+      searchesByDate[dateStr] = (searchesByDate[dateStr] || 0) + 1;
+    });
+
+    // Create array with all days in range (including days with zero searches)
     const daysToGenerate = timeRange === 'week' ? 7 :
-                           timeRange === 'month' ? 30 :
-                           timeRange === 'quarter' ? 90 : 365;
-    
+                          timeRange === 'month' ? 30 :
+                          timeRange === 'quarter' ? 90 : 365;
+
     for (let i = 0; i < daysToGenerate; i++) {
       const date = new Date();
       date.setDate(date.getDate() - (daysToGenerate - i - 1));
-      const dateStr = date.toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' });
-      
-      // Generate a somewhat realistic search count (base + random)
-      const baseCount = 20;
-      const randomFactor = Math.floor(Math.random() * 50);
+      const dateStr = date.toLocaleDateString('vi-VN', dateFormat);
       
       reportData.searchStats.push({
         date: dateStr,
-        count: baseCount + randomFactor
+        count: searchesByDate[dateStr] || 0
       });
     }
     

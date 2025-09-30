@@ -98,4 +98,98 @@ router.put('/users/:id/toggle-active', async (req, res) => {
   }
 });
 
+/**
+ * @route   GET /api/admin/users/recent
+ * @desc    Get recent users
+ * @access  Admin
+ */
+router.get('/users/recent', async (req, res) => {
+  try {
+    const { limit = 5 } = req.query;
+    
+    const recentUsersRef = db.collection('user')
+      .orderBy('created_at', 'desc')
+      .limit(parseInt(limit));
+    
+    const snapshot = await recentUsersRef.get();
+    const users = [];
+    
+    snapshot.forEach(doc => {
+      const userData = doc.data();
+      // Remove sensitive data
+      if (userData.password) delete userData.password;
+      
+      users.push({
+        id: doc.id,
+        displayName: userData.displayName || userData.username || 'User',
+        email: userData.email || '',
+        role: userData.role || 'user',
+        created_at: userData.created_at?.toDate() || new Date()
+      });
+    });
+    
+    return res.json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    console.error('Error getting recent users:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+/**
+ * @route   GET /api/admin/users/stats
+ * @desc    Get user statistics
+ * @access  Admin
+ */
+router.get('/users/stats', async (req, res) => {
+  try {
+    const usersSnapshot = await db.collection('user').get();
+    let totalUsers = 0;
+    let activeUsers = 0;
+    
+    // Calculate 30 days ago for new users count
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    let newUsers = 0;
+    
+    usersSnapshot.forEach(doc => {
+      const userData = doc.data();
+      totalUsers++;
+      
+      // Count active users
+      if (userData.isActive !== false) {
+        activeUsers++;
+      }
+      
+      // Count new users in the last 30 days
+      if (userData.created_at && 
+          userData.created_at.toDate && 
+          userData.created_at.toDate() >= thirtyDaysAgo) {
+        newUsers++;
+      }
+    });
+    
+    return res.json({
+      success: true,
+      data: {
+        totalUsers,
+        activeUsers,
+        newUsers
+      }
+    });
+  } catch (error) {
+    console.error('Error getting user stats:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

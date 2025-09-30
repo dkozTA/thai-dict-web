@@ -200,6 +200,14 @@ router.get('/search', async (req, res) => {
           search_count: admin.firestore.FieldValue.increment(1),
           last_searched_at: new Date()
         });
+
+        // log each search with timestamp
+        await db.collection('search_logs').add({
+          word_id: result.id,
+          word: result.word,
+          timestamp: new Date(),
+          user_id: req.query.userId || 'anonymous'
+        });
       }
     }
 

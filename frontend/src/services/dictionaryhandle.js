@@ -8,7 +8,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 // axios.defaults.headers.common['Content-Type'] = 'application/json; charset=utf-8';
 
 // Search for Thai words using our API
-  export const searchThaiWords = async (searchTerm, searchType = 'all') => {
+  export const searchThaiWords = async (searchTerm, searchType = 'all', userId = 'anonymous') => {
     try {
       if (!searchTerm.trim()) return [];
 
@@ -19,7 +19,8 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         params: {
           query: searchTerm.trim(), // Don't encode here
           limit: 20,
-          searchType: searchType
+          searchType: searchType,
+          userId: userId
         },
         // headers: {
         //   'Accept-Charset': 'UTF-8',

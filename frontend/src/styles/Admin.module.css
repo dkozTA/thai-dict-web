@@ -660,8 +660,12 @@
 
 .chartContainer {
   height: 300px;
-  position: relative;
-  flex-grow: 1;
+  margin-top: 1rem;
+}
+
+.chartContainer canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .timeRangeSelector {
@@ -689,4 +693,81 @@
   color: #666;
   margin-left: 8px;
   font-style: italic;
+}
+
+/* Translation feedback specific styles */
+.formTextarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.thaiWord {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  max-width: 300px;
+  overflow-wrap: break-word;
+}
+
+/* Make the table more responsive */
+.dataTable td {
+  max-width: 250px;
+  overflow-wrap: break-word;
+}
+
+/* Improve filter tabs styling */
+.filterTabs {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filterTab {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  transition: all 0.2s;
+  min-width: 100px;
+  text-align: center;
+}
+
+.filterTab:hover {
+  background: #e5e5e5;
+}
+
+.activeTab {
+  background: #1a1a1a !important;
+  color: white !important;
+  border-color: #1a1a1a !important;
+}
+
+/* Improve refresh button */
+.refreshBtn {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refreshBtn:hover {
+  background: #e5e5e5;
+}
+
+/* Improve modal action buttons */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+/* Make rows more readable */
+.dataTable tr:hover td {
+  background: #f5f5f5;
 }

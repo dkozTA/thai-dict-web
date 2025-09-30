@@ -197,4 +197,40 @@ router.post('/suggestions/:id/reject', async (req, res) => {
   }
 });
 
+/**
+ * @route   GET /api/admin/suggestions/stats
+ * @desc    Get suggestion statistics
+ * @access  Admin
+ */
+router.get('/suggestions/stats', async (req, res) => {
+  try {
+    const stats = {
+      pending: 0,
+      approved: 0,
+      rejected: 0
+    };
+    
+    const snapshot = await db.collection('suggestions').get();
+    
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const status = data.status || 'pending';
+      if (stats[status] !== undefined) {
+        stats[status]++;
+      }
+    });
+    
+    return res.json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    console.error('Error getting suggestion stats:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

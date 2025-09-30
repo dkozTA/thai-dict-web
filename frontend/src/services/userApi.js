@@ -141,3 +141,19 @@ export const getSharedNotebook = async (shareId) => {
     throw error;
   }
 };
+
+/**
+ * Submit feedback for an incorrect translation
+ */
+export const submitTranslationFeedback = async (feedbackData) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/user/${feedbackData.userId}/suggestions/translation`,
+      feedbackData
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error submitting translation feedback:', error);
+    throw error;
+  }
+};

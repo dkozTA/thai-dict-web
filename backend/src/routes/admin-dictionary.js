@@ -195,4 +195,88 @@ router.delete('/dictionary/:id', async (req, res) => {
   }
 });
 
+// Get recent words
+router.get('/dictionary/recent', async (req, res) => {
+  try {
+    const { limit = 5 } = req.query;
+    
+    const recentWordsRef = db.collection('dictionary')
+      .orderBy('created_at', 'desc')
+      .limit(parseInt(limit));
+    
+    const snapshot = await recentWordsRef.get();
+    const words = [];
+    
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      words.push({
+        id: doc.id,
+        word: data.word || '',
+        vietnamese_meaning: data.vietnamese_meaning || '',
+        category: data.category || 'general',
+        created_at: data.created_at?.toDate() || new Date()
+      });
+    });
+
+    return res.json({
+      success: true,
+      data: words
+    });
+  } catch (error) {
+    console.error('Recent words error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Get dictionary statistics
+router.get('/dictionary/stats', async (req, res) => {
+  try {
+    // Get word count
+    const wordsSnapshot = await db.collection('dictionary').get();
+    
+    // Count categories
+    const categories = new Set();
+    let totalSearches = 0;
+    
+    wordsSnapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.category) {
+        categories.add(data.category);
+      }
+      
+      // Sum up total searches
+      totalSearches += (data.search_count || 0);
+    });
+    
+    // Get search logs from the last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const searchLogsSnapshot = await db.collection('search_logs')
+      .where('timestamp', '>=', thirtyDaysAgo)
+      .get();
+    
+    const recentSearches = searchLogsSnapshot.size;
+    
+    return res.json({
+      success: true,
+      data: {
+        totalWords: wordsSnapshot.size,
+        totalCategories: categories.size,
+        totalSearches: totalSearches,
+        recentSearches: recentSearches
+      }
+    });
+  } catch (error) {
+    console.error('Error getting dictionary stats:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

@@ -1,84 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../../styles/Admin.module.css';
-import { getDictionaryStats, getUserStats } from '../../services/adminApi';
+import { Chart, registerables } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import { 
+  useUserStats, 
+  useDictionaryStats, 
+  useSuggestionStats, 
+  useRecentWords, 
+  useRecentUsers,
+  useReports 
+} from '../../hooks/useAdminQueries';
+
+// Register Chart.js components
+Chart.register(...registerables);
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    activeUsers: 0,
-    newUsersThisMonth: 0,
-    totalWords: 0,
-    totalCategories: 0,
-    pendingSuggestions: 0,
-    totalSearches: 0
-  });
-  
-  const [recentWords, setRecentWords] = useState([]);
-  const [recentUsers, setRecentUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        
-        // For development, we'll use mock data
-        // In production, you would fetch this from your API endpoints
-        
-        // Mock data for statistics
-        const mockStats = {
-          totalUsers: 120,
-          activeUsers: 87,
-          newUsersThisMonth: 23,
-          totalWords: 4583,
-          totalCategories: 15,
-          pendingSuggestions: 8,
-          totalSearches: 28745
-        };
-        
-        // Mock data for recent words
-        const mockRecentWords = Array(5).fill().map((_, index) => ({
-          id: `word_${index}`,
-          word: `คำศัพท์ ${index + 1}`,
-          vietnamese_meaning: `Từ vựng số ${index + 1}`,
-          category: index % 2 === 0 ? 'food' : 'general',
-          created_at: new Date(Date.now() - index * 86400000).toISOString() // days ago
-        }));
-        
-        // Mock data for recent users
-        const mockRecentUsers = Array(5).fill().map((_, index) => ({
-          id: `user_${index}`,
-          displayName: `User ${index + 1}`,
-          email: `user${index + 1}@example.com`,
-          role: index === 0 ? 'admin' : 'user',
-          created_at: new Date(Date.now() - index * 86400000).toISOString()
-        }));
-        
-        setStats(mockStats);
-        setRecentWords(mockRecentWords);
-        setRecentUsers(mockRecentUsers);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
+  const { data: userStats, isLoading: loadingUsers } = useUserStats();
+  const { data: dictionaryStats, isLoading: loadingDictionary } = useDictionaryStats();
+  const { data: suggestionStats, isLoading: loadingSuggestions } = useSuggestionStats();
+  const { data: recentWords, isLoading: loadingRecentWords } = useRecentWords();
+  const { data: recentUsers, isLoading: loadingRecentUsers } = useRecentUsers();
+  const { data: reportData, isLoading: loadingReports } = useReports('week');
+
+  // Calculate combined loading state
+  const isLoading = loadingUsers || loadingDictionary || loadingSuggestions || 
+                   loadingRecentWords || loadingRecentUsers || loadingReports;
+
+  // Prepare chart data
+  const searchTrends = {
+    labels: reportData?.searchStats?.map(item => item.date) || [],
+    datasets: [
+      {
+        label: 'Lượt tìm kiếm',
+        data: reportData?.searchStats?.map(item => item.count) || [],
+        fill: false,
+        backgroundColor: '#4a6fa5',
+        borderColor: '#4a6fa5',
       }
-    };
+    ]
+  };
+
+    const formatDate = (timestamp) => {
+    if (!timestamp) return '';
     
-    fetchDashboardData();
-  }, []);
-  
-  // Format date helper
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN');
+    let date;
+    if (timestamp.toDate) {
+      // Handle Firebase Timestamp
+      date = timestamp.toDate();
+    } else if (timestamp.seconds) {
+      // Handle Firebase Timestamp in a different format
+      date = new Date(timestamp.seconds * 1000);
+    } else {
+      // Handle regular Date object or timestamp number
+      date = new Date(timestamp);
+    }
+    
+    return date.toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
+  // Combine stats into one object for easier use in the template
+  const stats = {
+    totalUsers: userStats?.totalUsers || 0,
+    activeUsers: userStats?.activeUsers || 0,
+    newUsersThisMonth: userStats?.newUsers || 0,
+    totalWords: dictionaryStats?.totalWords || 0,
+    totalCategories: dictionaryStats?.totalCategories || 0,
+    pendingSuggestions: suggestionStats?.pending || 0,
+    totalSearches: dictionaryStats?.totalSearches || 0
   };
 
   return (
     <div className={styles.adminPage}>
       <h1 className={styles.adminTitle}>Bảng điều khiển</h1>
       
-      {loading ? (
+      {isLoading ? (
         <div className={styles.loading}>Đang tải dữ liệu...</div>
       ) : (
         <>
@@ -118,6 +118,18 @@ const AdminDashboard = () => {
               <div className={styles.statDetail}>
                 <Link to="/admin/suggestions" className={styles.viewAllLink}>Xem tất cả</Link>
               </div>
+            </div>
+          </div>
+
+          {/* Chart Section */}
+          <div className={styles.recentSection}>
+            <h2 className={styles.sectionTitle}>Xu hướng tìm kiếm (7 ngày qua)</h2>
+            <div className={styles.chartContainer} style={{ height: '300px' }}>
+              <Line data={searchTrends} options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } }
+              }} />
             </div>
           </div>
           
@@ -201,6 +213,17 @@ const AdminDashboard = () => {
                 <div className={styles.viewAllRow}>
                   <Link to="/admin/users" className={styles.viewAllLink}>Xem tất cả người dùng →</Link>
                 </div>
+              </div>
+            </div>
+
+            <div className={styles.recentSection}>
+              <h2 className={styles.sectionTitle}>Xu hướng tìm kiếm (7 ngày qua)</h2>
+              <div className={styles.chartContainer} style={{ height: '300px' }}>
+                <Line data={searchTrends} options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: { legend: { position: 'top' } }
+                }} />
               </div>
             </div>
           </div>

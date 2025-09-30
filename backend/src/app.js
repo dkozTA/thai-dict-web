@@ -94,6 +94,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminDictionaryRoutes);
 app.use('/api/admin', adminSuggestionRoutes);
 app.use('/api/admin', adminReportsRoutes);
+app.use('/api/admin', require('./routes/admin-translations'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

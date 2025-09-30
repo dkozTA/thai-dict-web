@@ -27,6 +27,9 @@ const AdminSidebar = () => {
         <NavLink to="/admin/suggestions" className={({isActive}) => isActive ? styles.activeLink : styles.navLink}>
           Góp ý từ người dùng
         </NavLink>
+        <NavLink to="/admin/translations" className={({isActive}) => isActive ? styles.activeLink : styles.navLink}>
+          Phản hồi dịch thuật
+        </NavLink>
         <NavLink to="/admin/reports" className={({isActive}) => isActive ? styles.activeLink : styles.navLink}>
           Báo cáo & Thống kê
         </NavLink>
