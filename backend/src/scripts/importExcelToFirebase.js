@@ -3,13 +3,6 @@ const { db } = require('../config/firebase-admin');
 const path = require('path');
 const fs = require('fs');
 
-// Import Thai text handler utilities - make sure this file exists
-const { 
-  containsThaiCharacters, 
-  normalizeThaiText,
-  transliteratedToThai 
-} = require('../utils/thaiTextHandler');
-
 class ExcelImporter {
   constructor() {
     this.collection = db.collection('dictionary');
@@ -55,7 +48,7 @@ class ExcelImporter {
       phonetic: '',
       grammar_note: '',
       mainMeaning: '',
-      examples: []  // Will be array of { thai: '', meaning: '' } pairs
+      exampleMeanings: []  // Will be array of { thai: '', meaning: '' } pairs
     };
 
     if (!text) return result;
@@ -93,91 +86,98 @@ class ExcelImporter {
     }
     
     // Step 4: Process each definition to extract examples and main meaning
+    const mainMeanings = [];
     definitions.forEach(def => {
       // Split by colon to separate examples
-      const parts = def.content.split(':').map(p => p.trim());
+      const parts = def.content.split(/[:!]/).map(p => p.trim());
       
+      if (parts[0]) {
+        // Thêm tiền tố số (1., 2.) vào nghĩa chính
+        mainMeanings.push(parts[0].trim());
+      }
+      
+      // Phần sau dấu : LÀ NGHĨA CỦA VÍ DỤ
       if (parts.length > 1) {
-        // First part is main meaning or example Thai word
-        const firstPart = parts[0].trim();
-        
-        // Rest could contain both example meaning and additional meanings
-        const restParts = parts.slice(1).join(':').split('-').map(p => p.trim());
-        
-        if (restParts.length > 0) {
-          // First of the rest is the example meaning
-          result.examples.push({
-            thai: firstPart,
-            meaning: restParts[0]
-          });
-          
-          // Any additional parts are part of the main meaning
-          if (restParts.length > 1) {
-            result.mainMeaning += (result.mainMeaning ? ' ' : '') + 
-              def.number + ' ' + restParts.slice(1).join(' - ');
-          } else if (!result.mainMeaning) {
-            result.mainMeaning = def.number + ' ' + firstPart;
-          }
-        }
-      } else if (parts.length === 1 && !result.mainMeaning) {
-        // Only one part, use as main meaning
-        result.mainMeaning = def.number + ' ' + parts[0];
+        const exampleText = parts.slice(1).join(':');
+        // Tách các nghĩa ví dụ khác nhau bằng dấu - hoặc ;
+        const exMeanings = exampleText.split(/[-;.]/).map(m => m.trim()).filter(Boolean);
+        result.exampleMeanings.push(...exMeanings);
       }
     });
 
+    result.mainMeaning = mainMeanings.join('; ').trim();
     return result;
   }
   // Process a row from Excel to create a document object
   processRow(row, index) {
     try {
-      const thaiWord = this.cleanText(row[0]);
-      const thaiExamplesRaw = this.cleanText(row[1]);
-      const columnC = this.cleanText(row[2]);
+      const thaiWord = this.cleanText(row[0]); // Cột A
+      const thaiExamplesRaw = this.cleanText(row[1]); // Cột B
+      const columnC = this.cleanText(row[2]); // Cột C
 
       if (!thaiWord || !columnC) return null;
 
+      // 1. Phân tích cột C (Dùng hàm đã sửa)
       const parsed = this.parseColumnC(columnC);
       
-      // Extract examples from column B and match with meanings
+      // 2. Phân tích cột B (Ví dụ tiếng Thái) - LOGIC MỚI
       const mergedExamples = [];
+      const thaiExamples = []; // Mảng chỉ chứa string ví dụ tiếng Thái
       
-      // Process column B examples (Thai text)
-      const thaiExamples = [];
       if (thaiExamplesRaw) {
-        // Split by numbered items (1. 2. etc)
-        const examples = thaiExamplesRaw.split(/(\d+\.\s*)/).filter(Boolean);
+        const examplesSplitByNumber = thaiExamplesRaw.split(/(\d+\.\s*)/).filter(Boolean);
         
-        // Group them properly
-        for (let i = 0; i < examples.length; i += 2) {
-          const number = examples[i].trim();
-          const content = (i + 1 < examples.length) ? examples[i + 1].trim() : '';
-          if (content) {
-            thaiExamples.push({ number, content });
+        if (examplesSplitByNumber.length > 1) { 
+          // Trường hợp 1: Có số (1., 2., ...)
+          for (let i = 0; i < examplesSplitByNumber.length; i += 2) {
+            const content = (i + 1 < examplesSplitByNumber.length) ? examplesSplitByNumber[i + 1].trim() : '';
+            if (content) {
+              thaiExamples.push(content);
+            }
+          }
+        } else if (examplesSplitByNumber.length === 1) { 
+          // Trường hợp 2: Không có số, chỉ có text
+          // Thử tách bằng dấu chấm, chấm phẩy, hoặc gạch nối
+          const fallbackExamples = examplesSplitByNumber[0].split(/[.;-]/).map(m => m.trim()).filter(Boolean);
+          if (fallbackExamples.length > 0) {
+            thaiExamples.push(...fallbackExamples);
+          } else {
+            // Nếu vẫn không tách được, lấy toàn bộ làm 1 ví dụ
+            thaiExamples.push(examplesSplitByNumber[0].trim());
           }
         }
+        // Nếu examplesSplitByNumber.length == 0, thaiExamples sẽ rỗng (đúng)
       }
       
-      // Match Thai examples from column B with meanings from parsed column C
-      thaiExamples.forEach((ex, index) => {
-        mergedExamples.push({
-          thai: ex.content,
-          meaning: index < parsed.examples.length ? parsed.examples[index].meaning : ''
-        });
-      });
+      // 3. Xử lý dữ liệu không nhất quán (Patch)
+      // (Giữ nguyên logic patch cũ của bạn)
+      if (
+        thaiExamples.length > 0 &&
+        parsed.exampleMeanings.length === 0 &&
+        parsed.mainMeaning &&
+        parsed.mainMeaning !== 'Chưa có nghĩa'
+      ) {
+        const potentialExampleMeanings = parsed.mainMeaning.split(';').map(m => m.trim()).filter(Boolean);
+        parsed.exampleMeanings = potentialExampleMeanings;
+        parsed.mainMeaning = 'Chưa có nghĩa'; 
+      }
+        
+      // 4. Gộp ví dụ từ Cột B (thai) và Cột C (meaning)
+      const numExamples = Math.max(thaiExamples.length, parsed.exampleMeanings.length);
       
-      // Add any remaining examples from column C
-      if (parsed.examples.length > thaiExamples.length) {
-        for (let i = thaiExamples.length; i < parsed.examples.length; i++) {
-          mergedExamples.push(parsed.examples[i]);
-        }
+      for (let i = 0; i < numExamples; i++) {
+        mergedExamples.push({
+          thai: thaiExamples[i] || '', 
+          meaning: parsed.exampleMeanings[i] || '' 
+        });
       }
 
-      // Create document object
+      // 5. Create document object
       const document = {
         word: thaiWord,
         word_transliterated: parsed.phonetic || '',
-        vietnamese_meaning: parsed.mainMeaning || 'Chưa có nghĩa',
-        examples: mergedExamples,
+        vietnamese_meaning: parsed.mainMeaning || 'Chưa có nghĩa', 
+        examples: mergedExamples, 
         grammar_note: parsed.grammar_note || '',
         note: '',
         category: 'general',
@@ -188,6 +188,7 @@ class ExcelImporter {
 
       return document;
     } catch (error) {
+      console.error(`Error processing row ${index}:`, error.message, row.slice(0,3)); 
       this.errors.push({ row, error: error.message });
       return null;
     }

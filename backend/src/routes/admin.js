@@ -49,12 +49,45 @@ router.get('/users', /*verifyAdmin,*/ async (req, res) => {
 router.put('/users/:id/role', async (req, res) => {
   try {
     const { role } = req.body;
+    const userId = req.params.id;
+    const adminId = req.user.uid;
     
-    if (!['user', 'moderator', 'editor', 'admin'].includes(role)) {
-      return res.status(400).json({ success: false, message: 'Invalid role' });
+    // Cant derole own account
+    if (userId === adminId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Không thể thay đổi quyền của chính bạn' 
+      });
     }
     
-    await db.collection('user').doc(req.params.id).update({
+    if (!['user', 'moderator', 'editor', 'admin'].includes(role)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid role' 
+      });
+    }
+    
+    // Cant derole other admin account
+    if (role !== 'admin') {
+      const userDoc = await db.collection('user').doc(userId).get();
+      
+      if (userDoc.exists && userDoc.data().role === 'admin') {
+        // Count admin
+        const adminSnapshot = await db.collection('user')
+          .where('role', '==', 'admin')
+          .get();
+          
+        if (adminSnapshot.size <= 1) {
+          return res.status(403).json({
+            success: false,
+            message: 'Không thể hạ quyền admin cuối cùng trong hệ thống'
+          });
+        }
+      }
+    }
+    
+    // update role
+    await db.collection('user').doc(userId).update({
       role,
       updated_at: new Date()
     });
